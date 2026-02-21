@@ -1,7 +1,6 @@
 package org.example;
 
 import org.example.models.*;
-import org.w3c.dom.css.RGBColor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,24 +10,94 @@ public class Board extends JPanel {
     public int tileSize = 50;
 
     // horizontal 
-    int rankCount = 8;
+    int boardWidthInTiles = 8;
 
     // vertical
-    int fileCount = 8;
+    int boardHeightInTiles = 8;
+
+    Input input = new Input(this);
+
+    ArrayList<Piece> pieces = new ArrayList<>();
+    private Piece selectedPiece;
 
     public Board() {
-        this.setPreferredSize(new Dimension(rankCount * tileSize, fileCount * tileSize));
+        this.setPreferredSize(new Dimension(boardWidthInTiles * tileSize, boardHeightInTiles * tileSize));
+
+        this.addMouseListener(input);
+        this.addMouseMotionListener(input);
 
         setStartingPosition();
     }
 
-    ArrayList<Piece> pieces = new ArrayList<>();
 
+    public boolean isValidMove(Move move) {
+        if (isSameTeam(move.piece, move.targetPiece))
+            return false;
+
+        return true;
+    }
+
+    public void makeMove(Move move) {
+        move.piece.column = move.newCol;
+        move.piece.row = move.newRow;
+
+        move.piece.xPos = move.newCol * tileSize;
+        move.piece.yPos = move.newRow * tileSize;
+
+        if (move.targetPiece != null) {
+            capturePiece(move.targetPiece);
+        }
+    }
+
+    public void capturePiece(Piece piece) {
+        pieces.remove(piece);
+    }
+
+    public void clearSelectedPiece() {
+        selectedPiece = null;
+    }
+
+    public void tryMoveSelectedPieceTo(int col, int row) {
+        if (selectedPiece != null) {
+            Move move = new Move(this, selectedPiece, col, row);
+            if (isValidMove(move)) {
+                makeMove(move);
+            } else {
+                selectedPiece.xPos = selectedPiece.column * tileSize;
+                selectedPiece.yPos = selectedPiece.row * tileSize;
+            }
+            clearSelectedPiece();
+            repaint();
+        }
+    }
+
+    public boolean isPieceSelected() {
+        return selectedPiece != null;
+    }
+
+    public void selectAt(int col, int row) {
+        Piece piece = getPieceAtLocation(col, row);
+        if (piece != null) {
+            System.out.println("Selected piece " + piece.getClass() + col + ", " + row);
+            selectedPiece = piece;
+        }
+    }
+
+    public Piece getSelectedPiece() {
+        return selectedPiece;
+    }
+
+    public boolean isSameTeam(Piece piece1, Piece piece2) {
+        if (piece1 == null || piece2 == null) {
+            return false;
+        }
+        return piece1.isWhite == piece2.isWhite;
+    }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        for (int row = 0; row < rankCount; row++) {
-            for (int column = 0; column < fileCount; column++) {
+        for (int row = 0; row < boardWidthInTiles; row++) {
+            for (int column = 0; column < boardHeightInTiles; column++) {
                 if ((row + column) % 2 == 0) {
                     g.setColor(new Color(245, 222, 170));
                 } else {
@@ -44,6 +113,14 @@ public class Board extends JPanel {
         }
     }
 
+    public Piece getPieceAtLocation(int col, int row) {
+        for (Piece piece : pieces) {
+            if (piece.column == col && piece.row == row) {
+                return piece;
+            }
+        }
+        return null;
+    }
 
     public void addPiece(Piece piece) {
         pieces.add(piece);
@@ -76,4 +153,5 @@ public class Board extends JPanel {
             addPiece(new Pawn(this, i, 6, true));
         }
     }
+
 }

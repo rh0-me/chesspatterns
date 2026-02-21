@@ -5,8 +5,8 @@ import org.example.Board;
 public class Queen extends Piece {
     public Queen(Board board, int col, int row, boolean isWhite) {
         super(board);
-        this.row = col;
-        this.column = row;
+        this.row = row;
+        this.column = col;
         this.isWhite = isWhite;
 
         this.xPos = col * board.tileSize;
