@@ -39,7 +39,6 @@ public class Input extends MouseAdapter {
                 }
             }
         }
-        board.clearSelectedPiece();
     }
 
 

@@ -7,7 +7,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Board extends JPanel {
-    public int tileSize = 50;
+    public int tileSize = 100;
 
     // horizontal 
     int boardWidthInTiles = 8;
@@ -78,8 +78,9 @@ public class Board extends JPanel {
     public void selectAt(int col, int row) {
         Piece piece = getPieceAtLocation(col, row);
         if (piece != null) {
-            System.out.println("Selected piece " + piece.getClass() + col + ", " + row);
+            System.out.println("Selected piece " + piece.getClass() + " col: " + col + ", row: " + row);
             selectedPiece = piece;
+            repaint();
         }
     }
 
@@ -96,6 +97,43 @@ public class Board extends JPanel {
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        paintBoard(g);
+
+        Graphics2D g2 = (Graphics2D) g.create();
+
+//        paintHighlightedTile(g2);
+
+        paintPieces(g2);
+    }
+
+    // TODO: Currently not working, need to replace rects for JPanels or Buttons
+    private void paintHighlightedTile(Graphics2D g2) {
+        if (selectedPiece != null) {
+            try {
+                int x = selectedPiece.column * tileSize;
+                int y = selectedPiece.row * tileSize;
+
+                // translucent fill
+                g2.setColor(new Color(255, 255, 0, 90));
+                g2.fillRect(x, y, tileSize, tileSize);
+
+                // outline
+                g2.setStroke(new BasicStroke(4));
+                g2.setColor(new Color(255, 215, 0, 200));
+                g2.drawRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+            } finally {
+                g2.dispose();
+            }
+        }
+    }
+
+    private void paintPieces(Graphics2D g) {
+        for (Piece piece : pieces) {
+            piece.paint(g);
+        }
+    }
+
+    private void paintBoard(Graphics g) {
         for (int row = 0; row < boardWidthInTiles; row++) {
             for (int column = 0; column < boardHeightInTiles; column++) {
                 if ((row + column) % 2 == 0) {
@@ -105,11 +143,6 @@ public class Board extends JPanel {
                 }
                 g.fillRect(row * tileSize, column * tileSize, tileSize, tileSize);
             }
-        }
-
-
-        for (Piece piece : pieces) {
-            piece.paint((Graphics2D) g);
         }
     }
 

@@ -6,7 +6,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Piece {
+public abstract class Piece {
 
     public int row, column;
     public int xPos, yPos;
@@ -20,6 +20,16 @@ public class Piece {
 
     public Piece(Board board) {
         this.board = board;
+    }
+
+    public Piece(Board board, int col, int row, boolean isWhite) {
+        this.board = board;
+        this.row = row;
+        this.column = col;
+        this.isWhite = isWhite;
+
+        this.xPos = this.column * board.tileSize;
+        this.yPos = this.row * board.tileSize;
     }
 
     public Image getSprite(String spriteName) {
