@@ -1,6 +1,8 @@
 package org.example;
 
-import org.example.models.Piece;
+import org.example.chesspatterns.model.board.Board;
+import org.example.chesspatterns.pattern.command.Move;
+import org.example.chesspatterns.model.pieces.Piece;
 
 public class CheckScanner {
 

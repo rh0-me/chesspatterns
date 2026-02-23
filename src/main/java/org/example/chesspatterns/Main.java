@@ -1,4 +1,6 @@
-package org.example;
+package org.example.chesspatterns;
+
+import org.example.chesspatterns.model.board.Board;
 
 import javax.swing.*;
 import java.awt.*;

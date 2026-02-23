@@ -1,6 +1,6 @@
-package org.example.models;
+package org.example.chesspatterns.model.pieces;
 
-import org.example.Board;
+import org.example.chesspatterns.model.board.Board;
 
 import java.awt.*;
 

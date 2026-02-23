@@ -1,6 +1,6 @@
-package org.example.models;
+package org.example.chesspatterns.model.pieces;
 
-import org.example.Board;
+import org.example.chesspatterns.model.board.Board;
 
 public class Rook extends Piece {
     public Rook(Board board, int col, int row, boolean isWhite) {

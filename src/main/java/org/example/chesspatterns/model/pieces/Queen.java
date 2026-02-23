@@ -1,12 +1,11 @@
-package org.example.models;
+package org.example.chesspatterns.model.pieces;
 
-import org.example.Board;
+import org.example.chesspatterns.model.board.Board;
 
-public class Bishop extends Piece {
-    public Bishop(Board board, int col, int row, boolean isWhite) {
+public class Queen extends Piece {
+    public Queen(Board board, int col, int row, boolean isWhite) {
         super(board, col, row, isWhite);
-
-        this.sprite = getSprite(isWhite ? "B-W.png" : "B-B.png");
+        this.sprite = getSprite(isWhite ? "Q-W.png" : "Q-B.png");
     }
 
     @Override
@@ -14,10 +13,8 @@ public class Bishop extends Piece {
         int colDiff = Math.abs(newCol - this.column);
         int rowDiff = Math.abs(newRow - this.row);
 
-        // Bishops move diagonally, so the absolute difference between columns and rows must be the same
-        return colDiff == rowDiff && super.isValidMove(newCol, newRow);
+        return (colDiff == 0 || rowDiff == 0 || colDiff == rowDiff) && super.isValidMove(newCol, newRow);
     }
-
 
     @Override
     public boolean moveCollidesWithPieces(int newCol, int newRow) {
@@ -27,7 +24,7 @@ public class Bishop extends Piece {
         int colStep = Integer.signum(colDiff);
         int rowStep = Integer.signum(rowDiff);
 
-        int steps = Math.abs(colDiff); // or Math.abs(rowDiff), they are the same for a diagonal move
+        int steps = Math.max(Math.abs(colDiff), Math.abs(rowDiff)); // Number of steps to move
 
         for (int i = 1; i < steps; i++) {
             int intermediateCol = this.column + i * colStep;
