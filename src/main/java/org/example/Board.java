@@ -9,17 +9,26 @@ import java.util.ArrayList;
 public class Board extends JPanel {
     public int tileSize = 100;
 
+    CheckScanner checkScanner = new CheckScanner(this);
+
     // horizontal 
     public final int boardWidthInTiles = 8;
 
     // vertical
     public final int boardHeightInTiles = 8;
 
-    public int enPassantTileNum = -1;
+    public Point enPassantTile = null;
 
+    public void undoMove() {
 
-    public int getTileNum(int col, int row) {
-        return row * boardWidthInTiles + col;
+    }
+
+    public void resetBoard() {
+        enPassantTile = null;
+        clearSelectedPiece();
+        pieces.clear();
+        setStartingPosition();
+        repaint();
     }
 
     Input input = new Input(this);
@@ -38,70 +47,81 @@ public class Board extends JPanel {
 
 
     public boolean isValidMove(Move move) {
-        if (isSameTeam(move.piece, move.targetPiece))
-            return false;
+        if (isSameTeam(move.piece, move.targetPiece)) return false;
 
         if (!move.piece.isValidMove(move.newCol, move.newRow)) {
             return false;
         }
 
-        if (move.piece.moveCollidesWithPieces(move.newCol, move.newRow))
+        if (move.piece.moveCollidesWithPieces(move.newCol, move.newRow)) return false;
+
+        if (checkScanner.isInCheck(move)) return false;
+
+        return true;
+    }
+
+    public boolean isValidMoveWithOutCheck(Move move) {
+        if (isSameTeam(move.piece, move.targetPiece)) return false;
+
+        if (!move.piece.isValidMove(move.newCol, move.newRow)) {
             return false;
+        }
+
+        if (move.piece.moveCollidesWithPieces(move.newCol, move.newRow)) return false;
 
         return true;
     }
 
     public void makeMove(Move move) {
 
-        if (move.piece.getClass() == Pawn.class) {
+        boolean isDoubleStepPawnMove = move.piece instanceof Pawn && move.piece.isFirstMove && Math.abs(move.newRow - move.piece.row) == 2;
 
-            movePawn(move);
+
+        if (move.piece instanceof Pawn) {
+            int direction = move.piece.isWhite ? -1 : 1;
+
+            boolean isEnPassantMove =
+                    enPassantTile != null
+                            && move.targetPiece == null
+                            && move.newCol == enPassantTile.x
+                            && move.newRow == enPassantTile.y
+                            && Math.abs(move.oldCol - move.newCol) == 1
+                            && move.piece.row == enPassantTile.y - direction;
+
+            if (isEnPassantMove) {
+                Piece capturedPawn = getPieceAtLocation(enPassantTile.x, enPassantTile.y - direction);
+                if (capturedPawn instanceof Pawn) {
+                    capturePiece(capturedPawn);
+                }
+            }
         }
-        move.piece.column = move.newCol;
-        move.piece.row = move.newRow;
 
-        move.piece.xPos = move.newCol * tileSize;
-        move.piece.yPos = move.newRow * tileSize;
+        if (!isDoubleStepPawnMove) {
+            enPassantTile = null;
+        }
 
+        move.piece.updatePosition(move.newCol, move.newRow);
         move.piece.isFirstMove = false;
 
         if (move.targetPiece != null) {
             capturePiece(move.targetPiece);
         }
-    }
-
-    private void movePawn(Move move) {
-        int colDiff = move.newCol - move.piece.column;
-        int rowDiff = move.newRow - move.piece.row;
-
-        int direction = move.piece.isWhite ? -1 : 1;
-
-        
-        // TODO: en passant is currently not working
-        // Check for en passant
-        if (getTileNum(move.newCol, move.newRow) == enPassantTileNum) {
-            move.targetPiece = getPieceAtLocation(move.newCol, move.newRow - direction);
-        }
-
-        if (Math.abs(move.piece.row - move.newRow) == 2) {
-            enPassantTileNum = getTileNum(move.newCol, move.newRow - direction);
-        } else {
-            enPassantTileNum = -1;
-        }
-
 
         // Handle promotion
-        if ((move.newRow == 0 && move.piece.isWhite)
-                || (move.newRow == boardHeightInTiles - 1 && !move.piece.isWhite)) {
+        if ((move.newRow == 0 && move.piece.isWhite) || (move.newRow == boardHeightInTiles - 1 && !move.piece.isWhite)) {
             promotePawn(move);
         }
     }
 
     private void promotePawn(Move move) {
-        // For simplicity auto-promote to a Queen
-        move.piece = new Queen(this, move.newCol, move.newRow, move.piece.isWhite);
+        Piece pawn = move.piece;
+        capturePiece(pawn);
 
-        capturePiece(move.piece);
+        // For simplicity auto-promote to a Queen
+        Piece promoted = new Queen(this, move.newCol, move.newRow, pawn.isWhite);
+        addPiece(promoted);
+
+        move.piece = promoted;
     }
 
     public void capturePiece(Piece piece) {
@@ -124,6 +144,15 @@ public class Board extends JPanel {
             clearSelectedPiece();
             repaint();
         }
+    }
+
+    Piece findKing(boolean isWhite) {
+        for (Piece piece : pieces) {
+            if (piece instanceof King && piece.isWhite == isWhite) {
+                return piece;
+            }
+        }
+        return null;
     }
 
     public boolean isPieceSelected() {
@@ -160,6 +189,7 @@ public class Board extends JPanel {
             paintHighlightedTile(g2);
             paintHighlightPossibleMoves(g2);
             paintPieces(g2);
+//            paintHighlightEnPassant(g2);
 
         } finally {
             g2.dispose();
@@ -186,18 +216,24 @@ public class Board extends JPanel {
                         int x = column * tileSize;
                         int y = row * tileSize;
 
-                        int dotSize = tileSize / 5;
-                        int dotX = x + (tileSize / 2) - (dotSize / 2);
-                        int dotY = y + (tileSize / 2) - (dotSize / 2);
-
-
                         // translucent fill
-                        g2d.setColor(new Color(0, 248, 0, 181));
-                        g2d.fillOval(dotX, dotY, dotSize, dotSize);
+                        g2d.setColor(new Color(0, 248, 0, 100));
+                        g2d.fillRect(x, y, tileSize, tileSize);
                     }
                 }
             }
 
+        }
+    }
+
+    private void paintHighlightEnPassant(Graphics2D g2d) {
+        if (enPassantTile != null) {
+            int x = enPassantTile.x * tileSize;
+            int y = enPassantTile.y * tileSize;
+
+            // translucent fill
+            g2d.setColor(new Color(255, 0, 0, 100));
+            g2d.fillRect(x, y, tileSize, tileSize);
         }
     }
 
@@ -215,7 +251,7 @@ public class Board extends JPanel {
                 } else {
                     g2d.setColor(new Color(120, 80, 50));
                 }
-                g2d.fillRect(row * tileSize, column * tileSize, tileSize, tileSize);
+                g2d.fillRect(column * tileSize, row * tileSize, tileSize, tileSize);
             }
         }
     }

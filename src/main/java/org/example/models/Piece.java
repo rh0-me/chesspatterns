@@ -33,6 +33,14 @@ public abstract class Piece {
         this.yPos = this.row * board.tileSize;
     }
 
+
+    public void updatePosition(int col, int row) {
+        this.column = col;
+        this.row = row;
+        this.xPos = col * board.tileSize;
+        this.yPos = row * board.tileSize;
+    }
+
     public Image getSprite(String spriteName) {
         try (InputStream inputStream = ClassLoader.getSystemResourceAsStream(spriteName)) {
             if (inputStream == null)

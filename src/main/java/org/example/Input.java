@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.models.Piece;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -23,23 +25,31 @@ public class Input extends MouseAdapter {
 
     }
 
-    // TODO: Caputre only works if mouse is released on the same tile as it was pressed, need to check if piece is selected and then try to move it to the tile where mouse is released
     @Override
     public void mouseReleased(MouseEvent e) {
         System.out.println("Mouse released at: " + e.getX() + ", " + e.getY());
         Point tile = mouseToTile(e);
-        if (isOnBoard(tile)) {
-
-            if (board.isPieceSelected()) {
-                Move move = new Move(board, board.getSelectedPiece(), tile.x, tile.y);
-
-                if (board.isValidMove(move)) {
-                    board.makeMove(move);
-                    board.repaint();
-                }
+        Piece selectedPiece = board.getSelectedPiece();
+        if (selectedPiece != null) {
+            if (!isOnBoard(tile)) {
+                selectedPiece.xPos = selectedPiece.column * board.tileSize;
+                selectedPiece.yPos = selectedPiece.row * board.tileSize;
+                board.clearSelectedPiece();
+                board.repaint();
+                return;
             }
-        } else {
-            board.clearSelectedPiece();
+            Move move = new Move(board, selectedPiece, tile.x, tile.y);
+
+            if (board.isValidMove(move)) {
+                board.makeMove(move);
+                board.clearSelectedPiece();
+            }
+            // If move is invalid, snap piece back to its original position
+            else {
+                selectedPiece.xPos = selectedPiece.column * board.tileSize;
+                selectedPiece.yPos = selectedPiece.row * board.tileSize;
+            }
+            board.repaint();
         }
     }
 
@@ -48,16 +58,15 @@ public class Input extends MouseAdapter {
     public void mouseDragged(MouseEvent e) {
         System.out.println("Mouse dragged at: " + e.getX() + ", " + e.getY());
 
-//        if (board.isPieceSelected()) {
-//
-//            // TODO: Check
-//            // Center the piece on the mouse cursor
-//            // This is a simple way to achieve the dragging effect, but it may not be perfect for all piece sizes or board configurations
-//            int x = e.getX() - board.tileSize / 2;
-//            int y = e.getY() - board.tileSize / 2;
-//
-//            board.repaint();
-//        }
+        Piece selectedPiece = board.getSelectedPiece();
+
+        // Dragging effect
+        if (selectedPiece != null) {
+            selectedPiece.xPos = e.getX() - board.tileSize / 2;
+            selectedPiece.yPos = e.getY() - board.tileSize / 2;
+
+            board.repaint();
+        }
     }
 
     private Point mouseToTile(MouseEvent e) {
