@@ -10,10 +10,10 @@ public class Board extends JPanel {
     public int tileSize = 100;
 
     // horizontal 
-    int boardWidthInTiles = 8;
+    public final int boardWidthInTiles = 8;
 
     // vertical
-    int boardHeightInTiles = 8;
+    public final int boardHeightInTiles = 8;
 
     Input input = new Input(this);
 
@@ -32,6 +32,13 @@ public class Board extends JPanel {
 
     public boolean isValidMove(Move move) {
         if (isSameTeam(move.piece, move.targetPiece))
+            return false;
+
+        if (!move.piece.isValidMove(move.newCol, move.newRow)) {
+            return false;
+        }
+
+        if (move.piece.moveCollidesWithPieces(move.newCol, move.newRow))
             return false;
 
         return true;
@@ -97,51 +104,70 @@ public class Board extends JPanel {
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        paintBoard(g);
 
         Graphics2D g2 = (Graphics2D) g.create();
+        try {
 
-//        paintHighlightedTile(g2);
+            paintBoard(g2);
+            paintHighlightedTile(g2);
+            paintHighlightPossibleMoves(g2);
+            paintPieces(g2);
 
-        paintPieces(g2);
+        } finally {
+            g2.dispose();
+        }
     }
 
-    // TODO: Currently not working, need to replace rects for JPanels or Buttons
-    private void paintHighlightedTile(Graphics2D g2) {
+    private void paintHighlightedTile(Graphics2D g2d) {
         if (selectedPiece != null) {
-            try {
-                int x = selectedPiece.column * tileSize;
-                int y = selectedPiece.row * tileSize;
+            int x = selectedPiece.column * tileSize;
+            int y = selectedPiece.row * tileSize;
 
-                // translucent fill
-                g2.setColor(new Color(255, 255, 0, 90));
-                g2.fillRect(x, y, tileSize, tileSize);
-
-                // outline
-                g2.setStroke(new BasicStroke(4));
-                g2.setColor(new Color(255, 215, 0, 200));
-                g2.drawRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
-            } finally {
-                g2.dispose();
-            }
+            // translucent fill
+            g2d.setColor(new Color(236, 236, 43, 181));
+            g2d.fillRect(x, y, tileSize, tileSize);
         }
     }
 
-    private void paintPieces(Graphics2D g) {
-        for (Piece piece : pieces) {
-            piece.paint(g);
-        }
-    }
+    private void paintHighlightPossibleMoves(Graphics2D g2d) {
+        if (selectedPiece != null) {
+            for (int row = 0; row < boardHeightInTiles; row++) {
+                for (int column = 0; column < boardWidthInTiles; column++) {
+                    Move move = new Move(this, selectedPiece, column, row);
+                    if (isValidMove(move)) {
+                        int x = column * tileSize;
+                        int y = row * tileSize;
 
-    private void paintBoard(Graphics g) {
-        for (int row = 0; row < boardWidthInTiles; row++) {
-            for (int column = 0; column < boardHeightInTiles; column++) {
-                if ((row + column) % 2 == 0) {
-                    g.setColor(new Color(245, 222, 170));
-                } else {
-                    g.setColor(new Color(120, 80, 50));
+                        int dotSize = tileSize / 5;
+                        int dotX = x + (tileSize / 2) - (dotSize / 2);
+                        int dotY = y + (tileSize / 2) - (dotSize / 2);
+
+
+                        // translucent fill
+                        g2d.setColor(new Color(78, 81, 78, 181));
+                        g2d.fillOval(dotX, dotY, dotSize, dotSize);
+                    }
                 }
-                g.fillRect(row * tileSize, column * tileSize, tileSize, tileSize);
+            }
+
+        }
+    }
+
+    private void paintPieces(Graphics2D g2d) {
+        for (Piece piece : pieces) {
+            piece.paint(g2d);
+        }
+    }
+
+    private void paintBoard(Graphics2D g2d) {
+        for (int row = 0; row < boardHeightInTiles; row++) {
+            for (int column = 0; column < boardWidthInTiles; column++) {
+                if ((row + column) % 2 == 0) {
+                    g2d.setColor(new Color(245, 222, 170));
+                } else {
+                    g2d.setColor(new Color(120, 80, 50));
+                }
+                g2d.fillRect(row * tileSize, column * tileSize, tileSize, tileSize);
             }
         }
     }
