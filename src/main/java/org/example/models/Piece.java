@@ -47,6 +47,26 @@ public abstract class Piece {
         }
     }
 
+    public boolean isValidMove(int targetCol, int targetRow) {
+        // Basic bounds check
+        if (targetCol < 0 || targetCol >= board.boardWidthInTiles || targetRow < 0 || targetRow >= board.boardHeightInTiles) {
+            return false;
+        }
+
+        // Check if the target square is occupied by a piece of the same color
+        Piece targetPiece = board.getPieceAtLocation(targetCol, targetRow);
+        if (targetPiece != null && targetPiece.isWhite == this.isWhite) {
+            return false;
+        }
+
+        return true; // Default to valid move, specific piece types will override this
+    }
+
+    public boolean moveCollidesWithPieces(int targetCol, int targetRow) {
+        // This method can be overridden by pieces that need to check for collisions (like Rooks, Bishops, Queens)
+        return false;
+    }
+
     public void paint(Graphics2D g2d) {
         g2d.drawImage(sprite, xPos, yPos, null);
     }
