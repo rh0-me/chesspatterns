@@ -132,20 +132,6 @@ public class Board extends JPanel {
         selectedPiece = null;
     }
 
-    public void tryMoveSelectedPieceTo(int col, int row) {
-        if (selectedPiece != null) {
-            Move move = new Move(this, selectedPiece, col, row);
-            if (isValidMove(move)) {
-                makeMove(move);
-            } else {
-                selectedPiece.xPos = selectedPiece.column * tileSize;
-                selectedPiece.yPos = selectedPiece.row * tileSize;
-            }
-            clearSelectedPiece();
-            repaint();
-        }
-    }
-
     Piece findKing(boolean isWhite) {
         for (Piece piece : pieces) {
             if (piece instanceof King && piece.isWhite == isWhite) {
