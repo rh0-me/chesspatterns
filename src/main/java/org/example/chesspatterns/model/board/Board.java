@@ -21,7 +21,7 @@ public class Board {
     CheckScanner checkScanner = new CheckScanner(this);
 
     private Piece selectedPiece;
-    private Stack<Command> history = new Stack<>();
+    private final Stack<Command> history = new Stack<>();
 
     public Board() {
         setStartingPosition();
@@ -79,8 +79,14 @@ public class Board {
         return validMoves;
     }
 
-    public void setStartingPosition() {
+    public void resetBoard() {
         pieces.clear();
+        history.clear();
+
+        setStartingPosition();
+    }
+
+    public void setStartingPosition() {
 
         addPiece(new Rook(this, 0, 0, false));
         addPiece(new Knight(this, 1, 0, false));
@@ -126,5 +132,12 @@ public class Board {
 
     public List<Piece> getPieces() {
         return pieces;
+    }
+
+    public void undoMove() {
+        if (!history.empty()) {
+            Command lastCommand = history.pop();
+            lastCommand.undo();
+        }
     }
 }
