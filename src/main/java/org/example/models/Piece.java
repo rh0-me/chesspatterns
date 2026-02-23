@@ -12,6 +12,7 @@ public abstract class Piece {
     public int xPos, yPos;
 
     public boolean isWhite;
+    public boolean isFirstMove = true;
 
 
     Image sprite;
