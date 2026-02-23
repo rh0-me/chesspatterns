@@ -7,8 +7,8 @@ public class Move {
     final int newRow, newCol;
 
 
-    final Piece piece;
-    final Piece targetPiece;
+    Piece piece;
+    Piece targetPiece;
 
     public Move(Board board, Piece piece, int toCol, int toRow) {
         this.oldRow = piece.row;

@@ -15,6 +15,13 @@ public class Board extends JPanel {
     // vertical
     public final int boardHeightInTiles = 8;
 
+    public int enPassantTileNum = -1;
+
+
+    public int getTileNum(int col, int row) {
+        return row * boardWidthInTiles + col;
+    }
+
     Input input = new Input(this);
 
     ArrayList<Piece> pieces = new ArrayList<>();
@@ -45,6 +52,11 @@ public class Board extends JPanel {
     }
 
     public void makeMove(Move move) {
+
+        if (move.piece.getClass() == Pawn.class) {
+
+            movePawn(move);
+        }
         move.piece.column = move.newCol;
         move.piece.row = move.newRow;
 
@@ -52,10 +64,44 @@ public class Board extends JPanel {
         move.piece.yPos = move.newRow * tileSize;
 
         move.piece.isFirstMove = false;
-       
+
         if (move.targetPiece != null) {
             capturePiece(move.targetPiece);
         }
+    }
+
+    private void movePawn(Move move) {
+        int colDiff = move.newCol - move.piece.column;
+        int rowDiff = move.newRow - move.piece.row;
+
+        int direction = move.piece.isWhite ? -1 : 1;
+
+        
+        // TODO: en passant is currently not working
+        // Check for en passant
+        if (getTileNum(move.newCol, move.newRow) == enPassantTileNum) {
+            move.targetPiece = getPieceAtLocation(move.newCol, move.newRow - direction);
+        }
+
+        if (Math.abs(move.piece.row - move.newRow) == 2) {
+            enPassantTileNum = getTileNum(move.newCol, move.newRow - direction);
+        } else {
+            enPassantTileNum = -1;
+        }
+
+
+        // Handle promotion
+        if ((move.newRow == 0 && move.piece.isWhite)
+                || (move.newRow == boardHeightInTiles - 1 && !move.piece.isWhite)) {
+            promotePawn(move);
+        }
+    }
+
+    private void promotePawn(Move move) {
+        // For simplicity auto-promote to a Queen
+        move.piece = new Queen(this, move.newCol, move.newRow, move.piece.isWhite);
+
+        capturePiece(move.piece);
     }
 
     public void capturePiece(Piece piece) {
@@ -146,7 +192,7 @@ public class Board extends JPanel {
 
 
                         // translucent fill
-                        g2d.setColor(new Color(78, 81, 78, 181));
+                        g2d.setColor(new Color(0, 248, 0, 181));
                         g2d.fillOval(dotX, dotY, dotSize, dotSize);
                     }
                 }

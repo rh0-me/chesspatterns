@@ -39,6 +39,13 @@ public class Pawn extends Piece {
             return targetPiece != null && targetPiece.isWhite != this.isWhite; // Must be an opponent's piece
         }
 
+        if (board.getTileNum(targetCol, targetRow) == board.enPassantTileNum
+                && targetCol == this.column + colDiff
+                && rowDiff == direction
+                && board.getPieceAtLocation(targetCol, targetRow - direction) instanceof Pawn) {
+            return true;
+        }
+
         return false; // Invalid move
     }
 }
