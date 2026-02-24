@@ -1,9 +1,9 @@
 package org.example.chesspatterns.pattern.command;
 
 import org.example.chesspatterns.model.board.Board;
-import org.example.chesspatterns.model.pieces.Pawn;
-import org.example.chesspatterns.model.pieces.Piece;
-import org.example.chesspatterns.model.pieces.Queen;
+import org.example.chesspatterns.model.pieces.*;
+
+import java.awt.*;
 
 public class Move implements Command {
     public final int oldRow, oldCol;
@@ -18,6 +18,8 @@ public class Move implements Command {
     private Piece promotedPiece;
     private boolean wasFirstMove;
     private boolean isEnPassant;
+    private Point oldEnPassantTile;
+    private Move castlingRookMove;
 
     public Move(Board board, Piece piece, int toCol, int toRow) {
         this.board = board;
@@ -25,67 +27,61 @@ public class Move implements Command {
 
         this.oldRow = piece.row;
         this.oldCol = piece.column;
-
         this.newRow = toRow;
         this.newCol = toCol;
 
         this.wasFirstMove = piece.isFirstMove;
+        this.oldEnPassantTile = board.enPassantTile;
 
         this.capturedPiece = board.getPieceAtLocation(toCol, toRow);
     }
 
-   public Piece getCapturedPiece() {
+    public Piece getCapturedPiece() {
         return capturedPiece;
     }
-    
+
     @Override
     public void execute() {
 
-        handleEnPassant();
+        boolean isEnPassantMove = isEnPassantCapture();
+        if (isEnPassantMove) {
+            int direction = piece.isWhite ? -1 : 1;
+            this.isEnPassant = true;
+            this.capturedPiece = board.getPieceAtLocation(newCol, newRow - direction);
+        } else {
+            this.capturedPiece = board.getPieceAtLocation(newCol, newRow);
+        }
 
-        piece.updatePosition(newCol, newRow);
-        piece.isFirstMove = false;
+        updateEnPassantState();
 
         if (capturedPiece != null) {
             board.capturePiece(capturedPiece);
         }
 
-        updateEnPassantTile();
+        // 3. Rochade (Castling) Check
+        if (piece instanceof King && Math.abs(newCol - oldCol) == 2) {
+            performCastling();
+        }
+
+        piece.updatePosition(newCol, newRow);
+        piece.isFirstMove = false;
 
         handlePromotion();
-//        boolean isDoubleStepPawnMove = piece instanceof Pawn && piece.isFirstMove && Math.abs(newRow - piece.row) == 2;
-//
-//
-//        if (piece instanceof Pawn) {
-//            int direction = piece.isWhite ? -1 : 1;
-//
-//            boolean isEnPassantMove =
-//                    board.enPassantTile != null
-//                            && capturedPiece == null
-//                            && newCol == board.enPassantTile.x
-//                            && newRow == board.enPassantTile.y
-//                            && Math.abs(oldCol - newCol) == 1
-//                            && piece.row == board.enPassantTile.y - direction;
-//
-//            if (isEnPassantMove) {
-//                Piece capturedPawn = board.getPieceAtLocation(board.enPassantTile.x, board.enPassantTile.y - direction);
-//                if (capturedPawn instanceof Pawn) {
-//                    board.capturePiece(capturedPawn);
-//                }
-//            }
-//        }
-//
-//        if (!isDoubleStepPawnMove) {
-//            board.enPassantTile = null;
-//        }
-//
-//        piece.updatePosition(newCol, newRow);
-//        piece.isFirstMove = false;
-//
-//        if (capturedPiece != null) {
-//            board.capturePiece(capturedPiece);
-//        }
     }
+
+    private void performCastling() {
+        // Logik: Wir erzeugen einen ZWEITEN Move-Befehl für den Turm und führen ihn aus.
+        int rookCol = (newCol > oldCol) ? 7 : 0; // Kurze oder lange Rochade?
+        int rookTargetCol = (newCol > oldCol) ? newCol - 1 : newCol + 1;
+
+        Piece rook = board.getPieceAtLocation(rookCol, newRow);
+        if (rook instanceof Rook) {
+            // Rekursiver Move für den Turm (ohne En Passant Logik etc.)
+            castlingRookMove = new Move(board, rook, rookTargetCol, newRow);
+            castlingRookMove.execute();
+        }
+    }
+
 
     @Override
     public void undo() {
@@ -104,28 +100,24 @@ public class Move implements Command {
             board.addPiece(capturedPiece);
         }
 
-        // D. En Passant Tile Logik ist komplex beim Undo, 
-        // oft reicht es, es auf null zu setzen oder man müsste den alten Zustand im Board speichern.
-        // Fürs erste ignorieren wir das Zurücksetzen des globalen enPassantTiles.
-    }
-
-    private void handleEnPassant() {
-        if (piece instanceof Pawn) {
-            // Prüfung: Ist das ein En Passant Zug?
-            if (board.enPassantTile != null && newCol == board.enPassantTile.x && newRow == board.enPassantTile.y && capturedPiece == null // Zielfeld ist leer...
-                    && Math.abs(oldCol - newCol) == 1) { // ...aber wir bewegen uns diagonal
-
-                this.isEnPassant = true;
-
-                // Beim En Passant ist die geschlagene Figur NICHT auf dem Zielfeld, sondern "dahinter"
-                int direction = piece.isWhite ? -1 : 1;
-                this.capturedPiece = board.getPieceAtLocation(newCol, newRow - direction);
-            }
+        if (castlingRookMove != null) {
+            castlingRookMove.undo();
         }
+
+        board.enPassantTile = oldEnPassantTile;
     }
 
-    private void updateEnPassantTile() {
-// Prüfen ob Bauer 2 Felder vorrückt -> En Passant ermöglichen
+
+    private boolean isEnPassantCapture() {
+        if (piece instanceof Pawn && oldEnPassantTile != null) {
+            // Wenn wir auf das En Passant Feld ziehen
+            return newCol == oldEnPassantTile.x && newRow == oldEnPassantTile.y;
+        }
+        return false;
+    }
+
+    private void updateEnPassantState() {
+        // Prüfen ob Bauer 2 Felder vorrückt -> En Passant ermöglichen
         if (piece instanceof Pawn && Math.abs(newRow - oldRow) == 2) {
             int direction = piece.isWhite ? -1 : 1;
             // Das Feld HINTER dem Bauern ist das En Passant Ziel
@@ -138,8 +130,9 @@ public class Move implements Command {
     private void handlePromotion() {
 
         if (!(piece instanceof Pawn)) return;
+        int endRow = piece.isWhite ? 0 : board.boardHeightInTiles - 1;
 
-        if ((piece.isWhite && newRow == 0) || (!piece.isWhite && newRow == board.boardHeightInTiles - 1)) {
+        if (endRow == newRow) {
             board.capturePiece(piece);
 
             this.promotedPiece = new Queen(board, newCol, newRow, piece.isWhite);

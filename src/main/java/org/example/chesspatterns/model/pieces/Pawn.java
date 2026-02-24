@@ -34,25 +34,19 @@ public class Pawn extends Piece {
                     board.getPieceAtLocation(targetCol, this.row + direction) == null;
         }
 
-        if (board.enPassantTile != null
-                && targetCol == board.enPassantTile.x
-                && targetRow == board.enPassantTile.y
-                && Math.abs(colDiff) == 1
-                && Math.abs(rowDiff) == 1
-                && rowDiff == direction
-                && board.getPieceAtLocation(targetCol, targetRow) == null
-        ) {
-            Piece capturedPawn = board.getPieceAtLocation(targetCol, targetRow - direction);
-            return capturedPawn instanceof Pawn && capturedPawn.isWhite != this.isWhite;
-        }
-        
-        
-        // Capture move: one square diagonally forward
-        if (Math.abs(colDiff) == 1 && rowDiff == direction) {
+        if (colDiff == 1 && rowDiff == direction) {
             Piece targetPiece = board.getPieceAtLocation(targetCol, targetRow);
-            return targetPiece != null && targetPiece.isWhite != this.isWhite; // Must be an opponent's piece
-        }
 
+            if (targetPiece != null && targetPiece.isWhite != this.isWhite)
+                return true;
+
+            Point enPassantTile = board.enPassantTile;
+            if (targetPiece == null
+                    && enPassantTile != null
+                    && enPassantTile.x == targetCol
+                    && enPassantTile.y == targetRow - direction)
+                return true;
+        }
 
         return false; // Invalid move
     }
