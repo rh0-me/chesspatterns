@@ -76,7 +76,8 @@ public class GameManager {
                 // Probiere JEDES Feld auf dem Brett
                 for (int r = 0; r < 8; r++) {
                     for (int c = 0; c < 8; c++) {
-                        if (p.isValidMove(c, r)) {
+                        Move m = new Move(board, p, c, r);
+                        if (board.isValidMove(m)) {
                             return true; // Es gibt mindestens einen Rettungsweg
                         }
                     }
