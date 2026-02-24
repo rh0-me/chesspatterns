@@ -7,16 +7,24 @@ import org.example.chesspatterns.model.pieces.Piece;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BoardPanel extends JPanel {
-    private Board boardModel;
-    private InputController inputController;
+    private final Board boardModel;
 
     public final int tileSize = 100;
+    private final Map<String, Image> imageCache = new HashMap<>();
+
+    // NEW: Temporary Visual State for Dragging
+    private int dragX = -1;
+    private int dragY = -1;
 
     public BoardPanel(Board boardModel) {
         this.boardModel = boardModel;
-        this.inputController = new InputController(boardModel, this);
+        InputController inputController = new InputController(boardModel, this);
 
         this.addMouseListener(inputController);
         this.addMouseMotionListener(inputController);
@@ -29,20 +37,32 @@ public class BoardPanel extends JPanel {
 
     }
 
+    public void setDragPosition(int x, int y) {
+        this.dragX = x;
+        this.dragY = y;
+        repaint(); // Trigger a redraw
+    }
+
+    public void clearDragPosition() {
+        this.dragX = -1;
+        this.dragY = -1;
+        repaint();
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g.create();
-        try {
 
-            paintBoard(g2);
-            paintHighlights(g2);
-            paintPieces(g2);
+        paintBoard(g2);
+        paintHighlights(g2);
 
-        } finally {
-            g2.dispose();
+        for (Piece piece : boardModel.getPieces()) {
+            paintPiece(g2, piece);
         }
+
+
     }
 
 
@@ -101,10 +121,45 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    private void paintPieces(Graphics2D g2d) {
-        for (Piece piece : boardModel.getPieces()) {
-            piece.paint(g2d);
+    private void paintPiece(Graphics2D g2d, Piece piece) {
+
+        Image img = getImage(piece.getImageName());
+        int x, y;
+
+        // OPTIONAL: If this piece is currently being dragged by the user,
+        // use the drag coordinates from the Controller instead of the grid coordinates.
+        // (You would need to pass the currently dragged piece from InputController to here)
+        if (piece == boardModel.getSelectedPiece() && dragX != -1 && dragY != -1) {
+            x = dragX;
+            y = dragY;
+        } else {
+
+            // Calculate Pixel Position based on Logical Position
+            x = piece.column * tileSize;
+            y = piece.row * tileSize;
         }
+
+
+        g2d.drawImage(img, x, y, tileSize, tileSize, null);
+
     }
 
+
+    private Image getImage(String imageName) {
+        // If we already loaded it, return it from cache
+        if (imageCache.containsKey(imageName)) {
+            return imageCache.get(imageName);
+        }
+
+        // Otherwise load it
+        try (InputStream is = ClassLoader.getSystemResourceAsStream(imageName)) {
+            if (is == null) throw new IOException("Resource not found: " + imageName);
+            Image img = javax.imageio.ImageIO.read(is);
+            imageCache.put(imageName, img); // Save to cache
+            return img;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

@@ -28,7 +28,7 @@ public class Board {
     }
 
     public boolean isValidMove(Move move) {
-        if (isSameTeam(move.piece, move.targetPiece)) return false;
+        if (isSameTeam(move.piece, move.getCapturedPiece())) return false;
         if (!move.piece.isValidMove(move.newCol, move.newRow)) return false;
         if (move.piece.moveCollidesWithPieces(move.newCol, move.newRow)) return false;
         if (checkScanner.isInCheck(move)) return false;
@@ -41,6 +41,13 @@ public class Board {
 
         history.push(move);
 
+    }
+
+    public void undoMove() {
+        if (!history.empty()) {
+            Command lastCommand = history.pop();
+            lastCommand.undo();
+        }
     }
 
     public void capturePiece(Piece piece) {
@@ -82,6 +89,8 @@ public class Board {
     public void resetBoard() {
         pieces.clear();
         history.clear();
+        enPassantTile = null;
+        selectedPiece = null;
 
         setStartingPosition();
     }
@@ -134,10 +143,4 @@ public class Board {
         return pieces;
     }
 
-    public void undoMove() {
-        if (!history.empty()) {
-            Command lastCommand = history.pop();
-            lastCommand.undo();
-        }
-    }
 }

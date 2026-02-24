@@ -27,7 +27,15 @@ public class InputController extends MouseAdapter {
         Piece piece = boardModel.getPieceAtLocation(col, row);
         if (piece != null) {
             boardModel.setSelectedPiece(piece);
-            boardView.repaint();
+            updateDragState(e);
+        }
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        // Dragging effect
+        if (boardModel.getSelectedPiece() != null) {
+            updateDragState(e);
         }
     }
 
@@ -43,28 +51,21 @@ public class InputController extends MouseAdapter {
 
             if (boardModel.isValidMove(move)) {
                 boardModel.makeMove(move);
-            } else {
-                // rest dragging effect
-                selectedPiece.xPos = selectedPiece.column * boardView.tileSize;
-                selectedPiece.yPos = selectedPiece.row * boardView.tileSize;
             }
 
             boardModel.setSelectedPiece(null);
-            boardView.repaint(); // Neu zeichnen lassen
+            boardView.clearDragPosition();
         }
     }
 
 
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        Piece selectedPiece = boardModel.getSelectedPiece();
-        // Dragging effect
-        if (selectedPiece != null) {
-            selectedPiece.xPos = e.getX() - boardView.tileSize / 2;
-            selectedPiece.yPos = e.getY() - boardView.tileSize / 2;
+    private void updateDragState(MouseEvent e) {
+        // Calculate top-left corner so mouse is in the center of the piece
+        int x = e.getX() - (boardView.tileSize / 2);
+        int y = e.getY() - (boardView.tileSize / 2);
 
-            boardView.repaint();
-        }
+        // Update the View
+        boardView.setDragPosition(x, y);
     }
 }
 

@@ -6,7 +6,6 @@ public class King extends Piece{
     public King(Board board, int col, int row, boolean isWhite) {
         super(board, col, row, isWhite);
 
-        this.sprite = getSprite(isWhite ? "K-W.png" : "K-B.png");
     }
     
     @Override
