@@ -5,6 +5,7 @@ import org.example.chesspatterns.model.CheckScanner;
 import org.example.chesspatterns.model.pieces.*;
 import org.example.chesspatterns.pattern.command.Command;
 import org.example.chesspatterns.pattern.command.Move;
+import org.example.chesspatterns.pattern.observer.GameObserver;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class Board {
 
     private Piece selectedPiece;
     private final Stack<Command> history = new Stack<>();
+    private final List<GameObserver> observers = new ArrayList<>();
     private final PieceFactory pieceFactory = new PieceFactory();
 
     public Board() {
@@ -46,9 +48,8 @@ public class Board {
 
     public void makeMove(Move move) {
         move.execute();
-
         history.push(move);
-
+        notifyObservers();
         GameManager.getInstance().nextTurn();
 
     }
@@ -166,5 +167,20 @@ public class Board {
     public Piece promotePiece(PieceType type, boolean isWhite, int newCol, int newRow) {
 
         return pieceFactory.createPiece(type, this, newCol, newRow, isWhite);
+    }
+
+
+    public void addObserver(GameObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(GameObserver observer) {
+        observers.remove(observer);
+    }
+
+    public void notifyObservers() {
+        for (GameObserver observer : observers) {
+            observer.update();
+        }
     }
 }

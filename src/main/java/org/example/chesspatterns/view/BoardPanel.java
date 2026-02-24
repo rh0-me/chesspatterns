@@ -4,6 +4,7 @@ package org.example.chesspatterns.view;
 import org.example.chesspatterns.controller.InputController;
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.model.pieces.Piece;
+import org.example.chesspatterns.pattern.observer.GameObserver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +13,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BoardPanel extends JPanel {
+public class BoardPanel extends JPanel implements GameObserver {
     private final Board boardModel;
 
     public final int tileSize = 100;
@@ -161,5 +162,11 @@ public class BoardPanel extends JPanel {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public void update() {
+        this.repaint();
+        this.revalidate();
     }
 }

@@ -26,12 +26,14 @@ public class Main {
 
 
         Board boardModel = new Board();
+
         GameManager.getInstance().initializeGame(boardModel);
         GameManager.getInstance().setPromotionHandler(new SwingPromotionHandler(frame));
 
         GameManager.getInstance().askPromotionChoice(true);
 
         BoardPanel boardView = new BoardPanel(boardModel);
+        boardModel.addObserver(boardView);
 
         frame.setLayout(new BorderLayout());
 
