@@ -2,13 +2,16 @@ package org.example.chesspatterns.core;
 
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.model.pieces.Piece;
+import org.example.chesspatterns.model.pieces.PieceType;
 import org.example.chesspatterns.pattern.command.Move;
 
 public class GameManager {
 
     private static GameManager instance;
-
     public int gameState = 0; // 0 = ongoing, 1 = white wins, 2 = black wins, 3 = stalemate
+    private PromotionHandler promotionHandler;
+    private boolean isWhiteToMove = true;
+    public Board board;
 
     private GameManager() {
     }
@@ -20,8 +23,16 @@ public class GameManager {
         return instance;
     }
 
-    public Board board;
-    private boolean isWhiteToMove = true;
+    public void setPromotionHandler(PromotionHandler promotionHandler) {
+        this.promotionHandler = promotionHandler;
+    }
+
+    public PieceType askPromotionChoice(boolean isWhite) {
+        if (promotionHandler != null) {
+            return promotionHandler.handlePromotion(isWhite);
+        }
+        return PieceType.QUEEN; // Default to Queen if no handler is set
+    }
 
     public void initializeGame(Board board) {
         this.board = board;
@@ -65,9 +76,7 @@ public class GameManager {
                 // Probiere JEDES Feld auf dem Brett
                 for (int r = 0; r < 8; r++) {
                     for (int c = 0; c < 8; c++) {
-                        // Erstelle Test-Move
-                        Move move = new Move(board, p, c, r);
-                        if (board.isValidMove(move)) {
+                        if (p.isValidMove(c, r)) {
                             return true; // Es gibt mindestens einen Rettungsweg
                         }
                     }

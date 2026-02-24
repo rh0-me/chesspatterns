@@ -3,6 +3,7 @@ package org.example.chesspatterns;
 import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.view.BoardPanel;
+import org.example.chesspatterns.view.SwingPromotionHandler;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,10 @@ public class Main {
 
         Board boardModel = new Board();
         GameManager.getInstance().initializeGame(boardModel);
+        GameManager.getInstance().setPromotionHandler(new SwingPromotionHandler(frame));
+
+        GameManager.getInstance().askPromotionChoice(true);
+
         BoardPanel boardView = new BoardPanel(boardModel);
 
         frame.setLayout(new BorderLayout());

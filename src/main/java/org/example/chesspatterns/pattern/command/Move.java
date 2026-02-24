@@ -1,5 +1,6 @@
 package org.example.chesspatterns.pattern.command;
 
+import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.model.pieces.*;
 
@@ -135,7 +136,9 @@ public class Move implements Command {
         if (endRow == newRow) {
             board.capturePiece(piece);
 
-            this.promotedPiece = new Queen(board, newCol, newRow, piece.isWhite);
+            PieceType selectedType = GameManager.getInstance().askPromotionChoice(piece.isWhite);
+
+            this.promotedPiece = board.promotePiece(selectedType, piece.isWhite, newCol, newRow);
             board.addPiece(promotedPiece);
         }
 

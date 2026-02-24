@@ -23,6 +23,7 @@ public class Board {
 
     private Piece selectedPiece;
     private final Stack<Command> history = new Stack<>();
+    private final PieceFactory pieceFactory = new PieceFactory();
 
     public Board() {
         setStartingPosition();
@@ -71,30 +72,30 @@ public class Board {
 
     public void setStartingPosition() {
 
-        addPiece(new Rook(this, 0, 0, false));
-        addPiece(new Knight(this, 1, 0, false));
-        addPiece(new Bishop(this, 2, 0, false));
-        addPiece(new Queen(this, 3, 0, false));
-        addPiece(new King(this, 4, 0, false));
-        addPiece(new Bishop(this, 5, 0, false));
-        addPiece(new Knight(this, 6, 0, false));
-        addPiece(new Rook(this, 7, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 0, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 1, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 2, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.QUEEN, this, 3, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.KING, this, 4, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 5, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 6, 0, false));
+        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 7, 0, false));
 
         for (int i = 0; i < 8; i++) {
-            addPiece(new Pawn(this, i, 1, false));
+            addPiece(pieceFactory.createPiece(PieceType.PAWN, this, i, 1, false));
         }
 
-        addPiece(new Rook(this, 0, 7, true));
-        addPiece(new Knight(this, 1, 7, true));
-        addPiece(new Bishop(this, 2, 7, true));
-        addPiece(new Queen(this, 3, 7, true));
-        addPiece(new King(this, 4, 7, true));
-        addPiece(new Bishop(this, 5, 7, true));
-        addPiece(new Knight(this, 6, 7, true));
-        addPiece(new Rook(this, 7, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 0, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 1, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 2, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.QUEEN, this, 3, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.KING, this, 4, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 5, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 6, 7, true));
+        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 7, 7, true));
 
         for (int i = 0; i < 8; i++) {
-            addPiece(new Pawn(this, i, 6, true));
+            addPiece(pieceFactory.createPiece(PieceType.PAWN, this, i, 6, true));
         }
     }
 
@@ -104,7 +105,7 @@ public class Board {
         }
         return piece1.isWhite == piece2.isWhite;
     }
-   
+
     public Piece findKing(boolean isWhite) {
         for (Piece piece : pieces) {
             if (piece instanceof King && piece.isWhite == isWhite) {
@@ -162,5 +163,8 @@ public class Board {
         pieces.remove(piece);
     }
 
+    public Piece promotePiece(PieceType type, boolean isWhite, int newCol, int newRow) {
 
+        return pieceFactory.createPiece(type, this, newCol, newRow, isWhite);
+    }
 }
