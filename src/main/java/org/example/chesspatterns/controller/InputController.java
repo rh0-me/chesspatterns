@@ -27,9 +27,9 @@ public class InputController extends MouseAdapter {
 
         Piece piece = boardModel.getPieceAtLocation(col, row);
         if (piece != null) {
-
-            boolean isWhiteTurn = GameManager.getInstance().isWhiteTurn();
-            if ((isWhiteTurn && piece.isWhite) || (!isWhiteTurn && !piece.isWhite)) {
+           
+            boolean isAllowed = GameManager.getInstance().getCurrentState().canSelectPiece(piece);
+            if (isAllowed) {
                 boardModel.setSelectedPiece(piece);
                 updateDragState(e);
             }
