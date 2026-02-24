@@ -8,14 +8,11 @@ public class Queen extends Piece {
     }
 
     @Override
-    public boolean isValidMove(int newCol, int newRow) {
-        if (!super.isValidMove(newCol, newRow)) {
-            return false;
-        }
+    public boolean isMovePatternValid(int newCol, int newRow) {
         int colDiff = Math.abs(newCol - this.column);
         int rowDiff = Math.abs(newRow - this.row);
 
-        return (colDiff == 0 || rowDiff == 0 || colDiff == rowDiff) && super.isValidMove(newCol, newRow);
+        return (colDiff == 0 || rowDiff == 0 || colDiff == rowDiff);
     }
 
     @Override

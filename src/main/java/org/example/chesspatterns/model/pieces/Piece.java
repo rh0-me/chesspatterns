@@ -47,21 +47,30 @@ public abstract class Piece {
 
     // --- LOGIC ONLY BELOW ---
 
-    public boolean isValidMove(int targetCol, int targetRow) {
-        if (targetCol < 0 || targetCol >= board.boardWidthInTiles || targetRow < 0 || targetRow >= board.boardHeightInTiles) {
+    public final boolean isValidMove(int targetCol, int targetRow) {
+        if (targetCol < 0
+                || targetCol >= board.boardWidthInTiles
+                || targetRow < 0
+                || targetRow >= board.boardHeightInTiles) {
             return false;
         }
         Piece targetPiece = board.getPieceAtLocation(targetCol, targetRow);
         if (targetPiece != null && targetPiece.isWhite == this.isWhite) {
             return false;
         }
-        
+
+        if (!isMovePatternValid(targetCol, targetRow)) {
+            return false;
+        }
+
         if (moveCollidesWithPieces(targetCol, targetRow)) {
             return false;
         }
-        
+
         return true;
     }
+
+    protected abstract boolean isMovePatternValid(int targetCol, int targetRow);
 
     public boolean moveCollidesWithPieces(int targetCol, int targetRow) {
         return false;

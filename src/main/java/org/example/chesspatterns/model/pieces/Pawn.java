@@ -11,11 +11,7 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public boolean isValidMove(int targetCol, int targetRow) {
-        if (!super.isValidMove(targetCol, targetRow)) {
-            return false;
-        }
-
+    public boolean isMovePatternValid(int targetCol, int targetRow) {
         int colDiffAbs = Math.abs(targetCol - this.column);
         int rowDiff = targetRow - this.row;
 
