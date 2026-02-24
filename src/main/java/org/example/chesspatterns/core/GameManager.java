@@ -4,13 +4,15 @@ import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.model.pieces.Piece;
 import org.example.chesspatterns.model.pieces.PieceType;
 import org.example.chesspatterns.pattern.command.Move;
+import org.example.chesspatterns.pattern.state.GameOverState;
+import org.example.chesspatterns.pattern.state.GameState;
+import org.example.chesspatterns.pattern.state.WhiteTurnState;
 
 public class GameManager {
 
     private static GameManager instance;
-    public int gameState = 0; // 0 = ongoing, 1 = white wins, 2 = black wins, 3 = stalemate
+    public GameState currentState;
     private PromotionHandler promotionHandler;
-    private boolean isWhiteToMove = true;
     public Board board;
 
     private GameManager() {
@@ -36,34 +38,33 @@ public class GameManager {
 
     public void initializeGame(Board board) {
         this.board = board;
-        this.isWhiteToMove = true;
+        setState(new WhiteTurnState());
     }
 
     public boolean isWhiteTurn() {
-
-        return isWhiteToMove;
+        return currentState instanceof WhiteTurnState;
     }
 
     public void nextTurn() {
-        isWhiteToMove = !isWhiteToMove;
-        System.out.println("Spielerwechsel: Jetzt ist " + (isWhiteToMove ? "Weiß" : "Schwarz") + " am Zug.");
-
-        checkGameStatus();
+        currentState.nextTurn(this);
+        checkGameStatusForCurrentPlayer();
     }
 
-    private void checkGameStatus() {
+    public void checkGameStatusForCurrentPlayer() {
+        boolean isWhiteToMove = isWhiteTurn();
         boolean inCheck = board.checkScanner.isKingInCheck(isWhiteToMove);
         boolean anyMovePossible = hasAnyValidMoves(isWhiteToMove);
 
         if (!anyMovePossible) {
+            //Win
             if (inCheck) {
-                // Keine Züge + Schach = Matt
-                gameState = isWhiteToMove ? 2 : 1; // Wenn Weiß am Zug ist und Matt ist, gewinnt Schwarz (2)
-                System.out.println("SCHACHMATT! " + (isWhiteToMove ? "Schwarz" : "Weiß") + " gewinnt.");
+                String winner = isWhiteToMove ? "Black" : "White";
+                setState(new GameOverState("Checkmate - " + winner + " wins"));
                 javax.swing.JOptionPane.showMessageDialog(null, "SCHACHMATT! Spiel vorbei.");
-            } else {
-                // Keine Züge + Kein Schach = Patt
-                gameState = 3;
+            }
+            // Stalemate
+            else {
+                setState(new GameOverState("Stalemate"));
                 System.out.println("PATT! Unentschieden.");
                 javax.swing.JOptionPane.showMessageDialog(null, "Patt! Unentschieden.");
             }
@@ -85,5 +86,13 @@ public class GameManager {
             }
         }
         return false;
+    }
+
+    public void setState(GameState state) {
+        this.currentState = state;
+    }
+
+    public GameState getCurrentState() {
+        return currentState;
     }
 }
