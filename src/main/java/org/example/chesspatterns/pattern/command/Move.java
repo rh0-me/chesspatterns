@@ -1,5 +1,6 @@
 package org.example.chesspatterns.pattern.command;
 
+import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.model.pieces.*;
 
@@ -16,9 +17,8 @@ public class Move implements Command {
 
     private Piece capturedPiece;
     private Piece promotedPiece;
-    private boolean wasFirstMove;
-    private boolean isEnPassant;
-    private Point oldEnPassantTile;
+    private final boolean wasFirstMove;
+    private final Point oldEnPassantTile;
     private Move castlingRookMove;
 
     public Move(Board board, Piece piece, int toCol, int toRow) {
@@ -46,7 +46,6 @@ public class Move implements Command {
         boolean isEnPassantMove = isEnPassantCapture();
         if (isEnPassantMove) {
             int direction = piece.isWhite ? -1 : 1;
-            this.isEnPassant = true;
             this.capturedPiece = board.getPieceAtLocation(newCol, newRow - direction);
         } else {
             this.capturedPiece = board.getPieceAtLocation(newCol, newRow);
@@ -67,6 +66,8 @@ public class Move implements Command {
         piece.isFirstMove = false;
 
         handlePromotion();
+
+        GameManager.getInstance().nextTurn();
     }
 
     private void performCastling() {
@@ -105,6 +106,8 @@ public class Move implements Command {
         }
 
         board.enPassantTile = oldEnPassantTile;
+
+        GameManager.getInstance().nextTurn();
     }
 
 

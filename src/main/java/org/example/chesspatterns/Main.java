@@ -1,5 +1,6 @@
 package org.example.chesspatterns;
 
+import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.view.BoardPanel;
 
@@ -24,7 +25,7 @@ public class Main {
 
 
         Board boardModel = new Board();
-
+        GameManager.getInstance().initializeGame(boardModel);
         BoardPanel boardView = new BoardPanel(boardModel);
 
         frame.setLayout(new BorderLayout());

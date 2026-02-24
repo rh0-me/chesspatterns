@@ -1,5 +1,6 @@
 package org.example.chesspatterns.controller;
 
+import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.pattern.command.Move;
 import org.example.chesspatterns.model.pieces.Piece;
@@ -26,8 +27,12 @@ public class InputController extends MouseAdapter {
 
         Piece piece = boardModel.getPieceAtLocation(col, row);
         if (piece != null) {
-            boardModel.setSelectedPiece(piece);
-            updateDragState(e);
+
+            boolean isWhiteTurn = GameManager.getInstance().isWhiteTurn();
+            if ((isWhiteTurn && piece.isWhite) || (!isWhiteTurn && !piece.isWhite)) {
+                boardModel.setSelectedPiece(piece);
+                updateDragState(e);
+            }
         }
     }
 
