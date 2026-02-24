@@ -16,25 +16,25 @@ public class Pawn extends Piece {
             return false;
         }
 
-        int colDiff = targetCol - this.column;
+        int colDiffAbs = Math.abs(targetCol - this.column);
         int rowDiff = targetRow - this.row;
 
         // Pawns move forward (direction depends on color)
         int direction = isWhite ? -1 : 1;
 
         // Standard move: one square forward
-        if (colDiff == 0 && rowDiff == direction) {
+        if (colDiffAbs == 0 && rowDiff == direction) {
             return board.getPieceAtLocation(targetCol, targetRow) == null; // Must be empty
         }
 
         // First move: two squares forward
-        if (colDiff == 0 && rowDiff == 2 * direction && isFirstMove) {
+        if (colDiffAbs == 0 && rowDiff == 2 * direction && isFirstMove) {
             // Both squares must be empty
             return board.getPieceAtLocation(targetCol, targetRow) == null &&
                     board.getPieceAtLocation(targetCol, this.row + direction) == null;
         }
 
-        if (colDiff == 1 && rowDiff == direction) {
+        if (colDiffAbs == 1 && rowDiff == direction) {
             Piece targetPiece = board.getPieceAtLocation(targetCol, targetRow);
 
             if (targetPiece != null && targetPiece.isWhite != this.isWhite)
@@ -44,7 +44,7 @@ public class Pawn extends Piece {
             if (targetPiece == null
                     && enPassantTile != null
                     && enPassantTile.x == targetCol
-                    && enPassantTile.y == targetRow - direction)
+                    && enPassantTile.y == targetRow )
                 return true;
         }
 
