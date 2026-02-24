@@ -1,6 +1,7 @@
 package org.example.chesspatterns.model.board;
 
-import org.example.CheckScanner;
+import org.example.chesspatterns.core.GameManager;
+import org.example.chesspatterns.model.CheckScanner;
 import org.example.chesspatterns.model.pieces.*;
 import org.example.chesspatterns.pattern.command.Command;
 import org.example.chesspatterns.pattern.command.Move;
@@ -18,7 +19,7 @@ public class Board {
     public Point enPassantTile = null;
 
     ArrayList<Piece> pieces = new ArrayList<>();
-    CheckScanner checkScanner = new CheckScanner(this);
+    public CheckScanner checkScanner = new CheckScanner(this);
 
     private Piece selectedPiece;
     private final Stack<Command> history = new Stack<>();
@@ -31,7 +32,13 @@ public class Board {
         if (isSameTeam(move.piece, move.getCapturedPiece())) return false;
         if (!move.piece.isValidMove(move.newCol, move.newRow)) return false;
         if (move.piece.moveCollidesWithPieces(move.newCol, move.newRow)) return false;
-        if (checkScanner.isInCheck(move)) return false;
+
+        move.execute();
+        boolean kingInCheckAfterMove = checkScanner.isKingInCheck(move.piece.isWhite);
+        move.undo();
+
+        if (kingInCheckAfterMove)
+            return false;
 
         return true;
     }
@@ -41,49 +48,16 @@ public class Board {
 
         history.push(move);
 
+        GameManager.getInstance().nextTurn();
+
     }
 
     public void undoMove() {
         if (!history.empty()) {
             Command lastCommand = history.pop();
             lastCommand.undo();
+            GameManager.getInstance().nextTurn();
         }
-    }
-
-    public void capturePiece(Piece piece) {
-        pieces.remove(piece);
-    }
-
-    public Piece getPieceAtLocation(int col, int row) {
-        for (Piece piece : pieces) {
-            if (piece.column == col && piece.row == row) {
-                return piece;
-            }
-        }
-        return null;
-    }
-
-    public void setSelectedPiece(Piece piece) {
-        selectedPiece = piece;
-    }
-
-    public Piece getSelectedPiece() {
-        return selectedPiece;
-    }
-
-    public ArrayList<Point> getValidMovesForPiece(Piece piece) {
-        ArrayList<Point> validMoves = new ArrayList<>();
-
-        for (int row = 0; row < boardHeightInTiles; row++) {
-            for (int col = 0; col < boardWidthInTiles; col++) {
-                Move move = new Move(this, piece, col, row);
-                if (isValidMove(move)) {
-                    validMoves.add(new Point(col, row));
-                }
-            }
-        }
-
-        return validMoves;
     }
 
     public void resetBoard() {
@@ -124,6 +98,62 @@ public class Board {
         }
     }
 
+    public boolean isSameTeam(Piece piece1, Piece piece2) {
+        if (piece1 == null || piece2 == null) {
+            return false;
+        }
+        return piece1.isWhite == piece2.isWhite;
+    }
+   
+    public Piece findKing(boolean isWhite) {
+        for (Piece piece : pieces) {
+            if (piece instanceof King && piece.isWhite == isWhite) {
+                return piece;
+            }
+        }
+        return null;
+    }
+
+    public void capturePiece(Piece piece) {
+        pieces.remove(piece);
+    }
+
+    public Piece getPieceAtLocation(int col, int row) {
+        for (Piece piece : pieces) {
+            if (piece.column == col && piece.row == row) {
+                return piece;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Point> getValidMovesForPiece(Piece piece) {
+        ArrayList<Point> validMoves = new ArrayList<>();
+
+        for (int row = 0; row < boardHeightInTiles; row++) {
+            for (int col = 0; col < boardWidthInTiles; col++) {
+                Move move = new Move(this, piece, col, row);
+                if (isValidMove(move)) {
+                    validMoves.add(new Point(col, row));
+                }
+            }
+        }
+
+        return validMoves;
+    }
+
+    public void setSelectedPiece(Piece piece) {
+        selectedPiece = piece;
+    }
+
+    public Piece getSelectedPiece() {
+        return selectedPiece;
+    }
+
+    public List<Piece> getPieces() {
+        return pieces;
+    }
+
     public void addPiece(Piece piece) {
         pieces.add(piece);
     }
@@ -132,15 +162,5 @@ public class Board {
         pieces.remove(piece);
     }
 
-    public boolean isSameTeam(Piece piece1, Piece piece2) {
-        if (piece1 == null || piece2 == null) {
-            return false;
-        }
-        return piece1.isWhite == piece2.isWhite;
-    }
-
-    public List<Piece> getPieces() {
-        return pieces;
-    }
 
 }

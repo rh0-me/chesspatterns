@@ -1,6 +1,5 @@
 package org.example.chesspatterns.pattern.command;
 
-import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.model.pieces.*;
 
@@ -67,7 +66,6 @@ public class Move implements Command {
 
         handlePromotion();
 
-        GameManager.getInstance().nextTurn();
     }
 
     private void performCastling() {
@@ -107,7 +105,6 @@ public class Move implements Command {
 
         board.enPassantTile = oldEnPassantTile;
 
-        GameManager.getInstance().nextTurn();
     }
 
 

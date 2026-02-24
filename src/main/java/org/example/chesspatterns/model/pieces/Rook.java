@@ -10,6 +10,9 @@ public class Rook extends Piece {
 
     @Override
     public boolean isValidMove(int newCol, int newRow) {
+        if (!super.isValidMove(newCol, newRow)) {
+            return false;
+        }
         // Rooks move in straight lines, so either the column or the row must be the same
         return (newCol == this.column || newRow == this.row) && super.isValidMove(newCol, newRow);
     }

@@ -55,6 +55,11 @@ public abstract class Piece {
         if (targetPiece != null && targetPiece.isWhite == this.isWhite) {
             return false;
         }
+        
+        if (moveCollidesWithPieces(targetCol, targetRow)) {
+            return false;
+        }
+        
         return true;
     }
 

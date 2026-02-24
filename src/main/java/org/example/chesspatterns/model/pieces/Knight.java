@@ -11,6 +11,9 @@ public class Knight extends Piece {
 
     @Override
     public boolean isValidMove(int newCol, int newRow) {
+        if (!super.isValidMove(newCol, newRow)) {
+            return false;
+        }
         int colDiff = Math.abs(newCol - this.column);
         int rowDiff = Math.abs(newRow - this.row);
 
