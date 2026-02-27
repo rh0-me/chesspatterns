@@ -39,4 +39,9 @@ public class King extends Piece {
 
         return false;
     }
+
+    @Override
+    public Piece copyWithBoard(Board newBoard) {
+        return new King(newBoard, this.column, this.row, this.isWhite);
+    }
 }

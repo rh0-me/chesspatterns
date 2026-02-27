@@ -17,4 +17,9 @@ public class Knight extends Piece {
         return (colDiff == 2 && rowDiff == 1) || (colDiff == 1 && rowDiff == 2);
     }
 
+    @Override
+    public Piece copyWithBoard(Board newBoard) {
+        return new Knight(newBoard, this.column, this.row, this.isWhite);
+    }
+
 }

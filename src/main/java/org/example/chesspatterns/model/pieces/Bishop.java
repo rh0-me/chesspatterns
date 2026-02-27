@@ -38,4 +38,9 @@ public class Bishop extends Piece {
 
         return false; // No collision
     }
+
+    @Override
+    public Piece copyWithBoard(Board newBoard) {
+        return new Bishop(newBoard, this.column, this.row, this.isWhite);
+    }
 }

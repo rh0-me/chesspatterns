@@ -35,4 +35,9 @@ public class Queen extends Piece {
 
         return false; // No collision
     }
+
+    @Override
+    public Piece copyWithBoard(Board newBoard) {
+        return new Queen(newBoard, this.column, this.row, this.isWhite);
+    }
 }

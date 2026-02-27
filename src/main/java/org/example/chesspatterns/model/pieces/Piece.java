@@ -75,4 +75,6 @@ public abstract class Piece {
     public boolean moveCollidesWithPieces(int targetCol, int targetRow) {
         return false;
     }
+    
+    public abstract Piece copyWithBoard(Board newBoard);
 }

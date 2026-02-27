@@ -40,11 +40,16 @@ public class Pawn extends Piece {
             if (targetPiece == null
                     && enPassantTile != null
                     && enPassantTile.x == targetCol
-                    && enPassantTile.y == targetRow )
+                    && enPassantTile.y == targetRow)
                 return true;
         }
 
         return false; // Invalid move
+    }
+
+    @Override
+    public Piece copyWithBoard(Board newBoard) {
+        return new Pawn(newBoard, this.column, this.row, this.isWhite);
     }
 
     @Override

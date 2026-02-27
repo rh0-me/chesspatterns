@@ -36,4 +36,9 @@ public class Rook extends Piece {
         }
         return false; // No collision
     }
+
+    @Override
+    public Piece copyWithBoard(Board newBoard) {
+        return new Rook(newBoard, this.column, this.row, this.isWhite);
+    }
 }
