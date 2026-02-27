@@ -2,6 +2,7 @@ package org.example.chesspatterns;
 
 import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
+import org.example.chesspatterns.pattern.memento.BoardMemento;
 import org.example.chesspatterns.view.BoardPanel;
 import org.example.chesspatterns.view.SwingPromotionHandler;
 
@@ -66,6 +67,20 @@ public class Main {
         JButton resetButton = resetIcon != null ? new JButton(resetIcon) : new JButton("Reset");
         JButton undoButton = undoIcon != null ? new JButton(undoIcon) : new JButton("Undo");
 
+        JButton quickSaveButton = new JButton("Quick Save");
+        quickSaveButton.addActionListener(_ -> {
+            GameManager.getInstance().quickSaveSlot = boardModel.createMemento();
+            JOptionPane.showMessageDialog(frame, "Game quick saved");
+        });
+
+        JButton quickLoad = new JButton("Quick Load");
+        quickLoad.addActionListener(_ -> {
+            if (GameManager.getInstance().quickSaveSlot != null) {
+                boardModel.restoreFromMemento(GameManager.getInstance().quickSaveSlot);
+            } else {
+                JOptionPane.showMessageDialog(frame, "No quick save available");
+            }
+        });
 
         undoButton.addActionListener(_ -> {
             boardModel.undoMove();
@@ -78,6 +93,8 @@ public class Main {
 
         controlPanel.add(resetButton);
         controlPanel.add(undoButton);
+        controlPanel.add(quickSaveButton);
+        controlPanel.add(quickLoad);
 
         frame.add(controlPanel, BorderLayout.NORTH);
         frame.add(boardView, BorderLayout.CENTER);
