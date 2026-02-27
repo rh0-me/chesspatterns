@@ -2,6 +2,8 @@ package org.example.chesspatterns.core;
 
 import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.pattern.command.CommandManager;
+import org.example.chesspatterns.pattern.factory.PieceFactory;
+import org.example.chesspatterns.pattern.factory.StandardPieceFactory;
 import org.example.chesspatterns.pattern.state.BlackTurnState;
 import org.example.chesspatterns.pattern.state.GameState;
 import org.example.chesspatterns.pattern.state.WhiteTurnState;
@@ -103,12 +105,14 @@ public class GameManager {
     private GameState currentState;
     private final Board board;
     private final CommandManager commandManager;
+    private final PieceFactory pieceFactory;
 
     private GameManager() {
         this.board = new Board();
         this.commandManager = new CommandManager();
         // Weiß beginnt traditionell
         this.currentState = new WhiteTurnState();
+        this.pieceFactory = new StandardPieceFactory();
     }
 
     public static GameManager getInstance() {
@@ -116,6 +120,10 @@ public class GameManager {
             instance = new GameManager();
         }
         return instance;
+    }
+
+    public PieceFactory getPieceFactory() {
+        return pieceFactory;
     }
 
     public void setState(GameState newState) {

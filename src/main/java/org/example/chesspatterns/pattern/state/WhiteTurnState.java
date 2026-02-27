@@ -2,10 +2,14 @@ package org.example.chesspatterns.pattern.state;
 
 import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.board.Board;
+import org.example.chesspatterns.model.pieces.Pawn;
 import org.example.chesspatterns.model.pieces.Piece;
 import org.example.chesspatterns.pattern.command.CastlingCommand;
 import org.example.chesspatterns.pattern.command.Command;
 import org.example.chesspatterns.pattern.command.MoveCommand;
+import org.example.chesspatterns.pattern.factory.PieceType;
+
+import javax.swing.*;
 
 public class WhiteTurnState implements GameState {
     @Override
@@ -26,9 +30,31 @@ public class WhiteTurnState implements GameState {
 
                 // 3. Command erstellen und ausführen
                 Command cmd;
+                if (pieceToMove instanceof Pawn && (endRow == 0)) {
+                    // 1. Spieler fragen (Auswahl-Dialog)
+                    String[] options = {
+                            PieceType.QUEEN.name(),
+                            PieceType.ROOK.name(),
+                            PieceType.BISHOP.name(),
+                            PieceType.KNIGHT.name()};
+
+                    int choice = JOptionPane.showOptionDialog(null,
+                            "Wähle eine Figur für die Umwandlung:",
+                            "Bauernumwandlung",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null, options, options[0]);
+
+                    // Fallback, falls der Spieler das Fenster schließt (Standard: Dame)
+                    PieceType selectedType = (choice >= 0) ? PieceType.valueOf(options[choice]) : PieceType.QUEEN;
 
 
-                if (Math.abs(startCol - endCol) == 2
+                    // 2. Factory nutzt das Pattern, um die Figur zu erstellen!
+                    Piece promotedPiece = context.getPieceFactory().createPiece(selectedType, true);
+
+                    // 3. PromotionCommand erstellen
+                    cmd = new PromotionCommand(board, startRow, startCol, endRow, endCol, promotedPiece);
+                } else if (Math.abs(startCol - endCol) == 2
                         && pieceToMove instanceof org.example.chesspatterns.model.pieces.King) {
                     cmd = new CastlingCommand(board, startRow, startCol, endCol);
                 } else {
