@@ -28,7 +28,6 @@ public class Board {
     private final PieceFactory pieceFactory = new PieceFactory();
 
     public Board() {
-        setStartingPosition();
     }
 
     public boolean isValidMove(Move move) {

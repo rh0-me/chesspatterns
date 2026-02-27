@@ -5,6 +5,7 @@ import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.view.BoardPanel;
 import org.example.chesspatterns.view.SwingPromotionHandler;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class Main {
         try {
             var iconStream = ClassLoader.getSystemResourceAsStream("P-B.png");
             if (iconStream != null) {
-                frame.setIconImage(javax.imageio.ImageIO.read(iconStream));
+                frame.setIconImage(ImageIO.read(iconStream));
             }
         } catch (IOException e) {
             System.err.println("Failed to load icon: " + e.getMessage());
@@ -26,6 +27,7 @@ public class Main {
 
 
         Board boardModel = new Board();
+        boardModel.setStartingPosition();
 
         GameManager.getInstance().initializeGame(boardModel);
         GameManager.getInstance().setPromotionHandler(new SwingPromotionHandler(frame));
@@ -49,9 +51,9 @@ public class Main {
                 System.err.println("restart.png not found in resources");
             }
 
-            undoIcon = new ImageIcon(javax.imageio.ImageIO.read(undoStream)
+            undoIcon = new ImageIcon(ImageIO.read(undoStream)
                     .getScaledInstance(50, 50, Image.SCALE_SMOOTH));
-            resetIcon = new ImageIcon(javax.imageio.ImageIO.read(resetStream)
+            resetIcon = new ImageIcon(ImageIO.read(resetStream)
                     .getScaledInstance(50, 50, Image.SCALE_SMOOTH));
         } catch (IOException e) {
             undoIcon = null;
