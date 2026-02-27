@@ -5,6 +5,7 @@ import org.example.chesspatterns.model.CheckScanner;
 import org.example.chesspatterns.model.pieces.*;
 import org.example.chesspatterns.pattern.command.Command;
 import org.example.chesspatterns.pattern.command.Move;
+import org.example.chesspatterns.pattern.memento.BoardMemento;
 import org.example.chesspatterns.pattern.observer.GameObserver;
 
 import java.awt.*;
@@ -182,4 +183,30 @@ public class Board {
             observer.update();
         }
     }
+
+    public Board copyWithPieces(ArrayList<Piece> newPieces) {
+        Board newBoard = new Board();
+        newBoard.pieces = newPieces;
+        return newBoard;
+    }
+
+    public BoardMemento createMemento() {
+        List<Piece> copiedPieces = new ArrayList<>();
+        for (Piece piece : pieces) {
+            copiedPieces.add(piece.copyWithBoard(this));
+        }
+        return new BoardMemento(copiedPieces);
+    }
+
+    public void restoreFromMemento(BoardMemento memento) {
+
+        this.pieces.clear();
+
+        for (Piece piece : memento.getPiecesSnapshot()) {
+            this.addPiece(piece.copyWithBoard(this));
+        }
+
+        notifyObservers();
+    }
+
 }

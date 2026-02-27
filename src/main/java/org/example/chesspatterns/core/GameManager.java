@@ -4,6 +4,7 @@ import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.model.pieces.Piece;
 import org.example.chesspatterns.model.pieces.PieceType;
 import org.example.chesspatterns.pattern.command.Move;
+import org.example.chesspatterns.pattern.memento.BoardMemento;
 import org.example.chesspatterns.pattern.state.GameOverState;
 import org.example.chesspatterns.pattern.state.GameState;
 import org.example.chesspatterns.pattern.state.WhiteTurnState;
@@ -17,6 +18,8 @@ public class GameManager {
 
     private GameManager() {
     }
+
+    public BoardMemento quickSaveSlot = null;
 
     public static GameManager getInstance() {
         if (instance == null) {
