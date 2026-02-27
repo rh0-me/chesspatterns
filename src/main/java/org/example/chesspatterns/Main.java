@@ -2,9 +2,7 @@ package org.example.chesspatterns;
 
 import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.pattern.flyweight.ImageCache;
-import org.example.chesspatterns.pattern.observer.GameStateObserver;
 import org.example.chesspatterns.pattern.state.BlackTurnState;
-import org.example.chesspatterns.pattern.state.GameState;
 import org.example.chesspatterns.view.BoardView;
 
 import javax.swing.*;
