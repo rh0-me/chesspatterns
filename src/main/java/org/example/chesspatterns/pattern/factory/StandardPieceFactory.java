@@ -3,7 +3,6 @@ package org.example.chesspatterns.pattern.factory;
 import org.example.chesspatterns.model.pieces.*;
 import org.example.chesspatterns.pattern.strategy.*;
 
-// Datei: StandardPieceFactory.java (Die konkrete Fabrik)
 public class StandardPieceFactory implements PieceFactory {
     @Override
     public Piece createPiece(PieceType type, boolean isWhite) {
@@ -15,7 +14,7 @@ public class StandardPieceFactory implements PieceFactory {
             case QUEEN ->
                     new Queen(isWhite, new CompositeMoveStrategy(new StraightMoveStrategy(), new DiagonalMoveStrategy()));
             case KING -> new King(isWhite, new KingMoveStrategy());
-            default -> throw new IllegalArgumentException("Unbekannter Figur-Typ: " + type);
+            default -> throw new IllegalArgumentException("Unknown type: " + type);
         };
     }
 
