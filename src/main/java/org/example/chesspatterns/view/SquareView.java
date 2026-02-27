@@ -7,4 +7,6 @@ public interface SquareView {
     JPanel getPanel();
 
     void resetVisuals();
+
+    SquareView unwrap();
 }

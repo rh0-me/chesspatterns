@@ -22,6 +22,11 @@ public class BaseSquare implements SquareView {
     @Override
     public void resetVisuals() {
         panel.setBackground(originalColor);
-        panel.setBorder(null); // Entfernt eventuelle Rahmen
+        panel.setBorder(null);
+    }
+
+    @Override
+    public SquareView unwrap() {
+        return this;
     }
 }

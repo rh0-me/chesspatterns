@@ -20,4 +20,9 @@ public abstract class SquareDecorator implements SquareView {
     public void resetVisuals() {
         decoratedSquare.resetVisuals();
     }
+
+    @Override
+    public SquareView unwrap() {
+        return decoratedSquare.unwrap();
+    }
 }

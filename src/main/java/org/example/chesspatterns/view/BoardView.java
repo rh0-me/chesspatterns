@@ -18,7 +18,7 @@ import java.util.List;
 public class BoardView extends JPanel implements BoardObserver {
     private final Board board;
     private final SquareView[][] squares = new SquareView[8][8];
-    private BoardController controller;
+    private final BoardController controller;
 
     public BoardView(Board board) {
         this.board = board;
@@ -39,20 +39,20 @@ public class BoardView extends JPanel implements BoardObserver {
 
                 SquareView square = new BaseSquare(color);
 
+                // TODO
                 JLabel pieceLabel = new JLabel("", SwingConstants.CENTER);
                 pieceLabel.setFont(new Font("Serif", Font.PLAIN, 40));
                 square.getPanel().add(pieceLabel);
 
-
-                // MOUSE LISTENER hinzufügen (Leitet Klick an Controller weiter)
                 final int r = row;
                 final int c = col;
-                square.getPanel().addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mousePressed(MouseEvent e) {
-                        controller.handleSquareClick(r, c);
-                    }
-                });
+                square.getPanel().addMouseListener(
+                        new MouseAdapter() {
+                            @Override
+                            public void mousePressed(MouseEvent e) {
+                                controller.handleSquareClick(r, c);
+                            }
+                        });
 
 
                 squares[row][col] = square;
@@ -63,12 +63,11 @@ public class BoardView extends JPanel implements BoardObserver {
 
 
     public void highlightSquare(int row, int col) {
-        clearHighlights(); // Alte Markierungen löschen
+        clearHighlights();
 
-        // Das Feld mit dem Decorator einwickeln
+        // Decorating
         squares[row][col] = new SelectionDecorator(squares[row][col]);
 
-        // Swing zwingen, das Update zu zeichnen
         squares[row][col].getPanel().repaint();
     }
 
@@ -77,16 +76,18 @@ public class BoardView extends JPanel implements BoardObserver {
             for (int c = 0; c < 8; c++) {
                 squares[r][c].resetVisuals();
 
-                // Falls es dekoriert war, wieder auf das reine BaseSquare zurücksetzen
-                // (In einer echten App würde man die Basis-Referenz sauberer verwalten, 
-                // aber für das visuelle Reset reicht resetVisuals() hier völlig aus).
+                squares[r][c] = squares[r][c].unwrap();
             }
         }
     }
 
     @Override
     public void onBoardChanged() {
-        System.out.println("GUI aktualisiert sich!");
+        System.out.println("UI-Update...");
+
+        if (this.controller != null) {
+            this.controller.resetSelection();
+        }
         updateUIFromModel();
         repaint();
     }
@@ -95,20 +96,17 @@ public class BoardView extends JPanel implements BoardObserver {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Piece p = board.getPiece(row, col);
-                // Das JLabel ist die erste Componente (Index 0) in unserem Square-Panel
+
+                // First component in the J Panel
                 JLabel label = (JLabel) squares[row][col].getPanel().getComponent(0);
 
                 if (p != null) {
-                    // 1. Text leeren (falls da noch Unicode drin stand)
                     label.setText("");
 
-                    // 2. Bild aus dem Flyweight-Cache holen
                     ImageIcon icon = ImageCache.getInstance().getImage(p.getImageName());
 
-                    // 3. Bild auf das Label setzen
                     label.setIcon(icon);
                 } else {
-                    // Feld ist leer -> Icon entfernen
                     label.setIcon(null);
                     label.setText("");
                 }
@@ -121,7 +119,7 @@ public class BoardView extends JPanel implements BoardObserver {
             int row = move[0];
             int col = move[1];
 
-            // Das Zielfeld mit dem ValidMoveDecorator umwickeln
+            // Decorating
             squares[row][col] = new ValidMoveDecorator(squares[row][col]);
             squares[row][col].getPanel().repaint();
         }
