@@ -41,6 +41,15 @@ public class ImageCache {
         }
         return cache.get(imageName); // Gibt das gecachte Bild zurück
     }
+    
+    public ImageIcon getScaledImage(String imageName, int width, int height) {
+        ImageIcon originalIcon = getImage(imageName);
+        if (originalIcon != null) {
+            Image scaledImage = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaledImage);
+        }
+        return null; 
+    }
 
     public Image getIcon() {
         return getImage("K-B").getImage();
