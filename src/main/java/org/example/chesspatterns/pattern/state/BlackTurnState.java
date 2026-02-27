@@ -7,6 +7,7 @@ import org.example.chesspatterns.model.pieces.Piece;
 import org.example.chesspatterns.pattern.command.CastlingCommand;
 import org.example.chesspatterns.pattern.command.Command;
 import org.example.chesspatterns.pattern.command.MoveCommand;
+import org.example.chesspatterns.pattern.command.PromotionCommand;
 import org.example.chesspatterns.pattern.factory.PieceType;
 
 import javax.swing.*;
@@ -17,20 +18,18 @@ public class BlackTurnState implements GameState {
         Board board = context.getBoard();
         Piece pieceToMove = board.getPiece(startRow, startCol);
 
-        // 1. Prüfung: Gibt es da überhaupt eine Figur und ist sie SCHWARZ?
         if (pieceToMove == null || pieceToMove.isWhite()) {
-            System.out.println("Schwarz ist am Zug. Du kannst keine weißen Figuren bewegen!");
+            System.out.println("Wrong piece selected. Please select a black piece to move.");
             return false;
         }
 
-        // 2. Prüfung (Strategy)
+        // Is the move valid? 
         if (pieceToMove.canMove(board, startRow, startCol, endRow, endCol)) {
-
             if (!board.wouldMoveCauseCheck(startRow, startCol, endRow, endCol, true)) {
-                // 3. Command ausführen
+
                 Command cmd;
+                // Promotion
                 if (pieceToMove instanceof Pawn && (endRow == 7)) {
-                    // 1. Spieler fragen (Auswahl-Dialog)
                     String[] options = {
                             PieceType.QUEEN.name(),
                             PieceType.ROOK.name(),
@@ -38,25 +37,26 @@ public class BlackTurnState implements GameState {
                             PieceType.KNIGHT.name()};
 
                     int choice = JOptionPane.showOptionDialog(null,
-                            "Wähle eine Figur für die Umwandlung:",
-                            "Bauernumwandlung",
+                            "Congratulations! Your pawn can be promoted. Choose a piece:",
+                            "Promotion",
                             JOptionPane.DEFAULT_OPTION,
                             JOptionPane.QUESTION_MESSAGE,
                             null, options, options[0]);
 
-                    // Fallback, falls der Spieler das Fenster schließt (Standard: Dame)
                     PieceType selectedType = (choice >= 0) ? PieceType.valueOf(options[choice]) : PieceType.QUEEN;
 
 
-                    // 2. Factory nutzt das Pattern, um die Figur zu erstellen!
                     Piece promotedPiece = context.getPieceFactory().createPiece(selectedType, false);
 
-                    // 3. PromotionCommand erstellen
                     cmd = new PromotionCommand(board, startRow, startCol, endRow, endCol, promotedPiece);
-                } else if (Math.abs(startCol - endCol) == 2
+                }
+                // Castling
+                else if (Math.abs(startCol - endCol) == 2
                         && pieceToMove instanceof org.example.chesspatterns.model.pieces.King) {
                     cmd = new CastlingCommand(board, startRow, startCol, endCol);
-                } else {
+                }
+                // Normal move
+                else {
                     cmd = new MoveCommand(board, startRow, startCol, endRow, endCol);
                 }
 
@@ -68,26 +68,25 @@ public class BlackTurnState implements GameState {
 
                 if (!whiteHasMovesBeforeMove) {
                     if (whiteInCheckBeforeMove) {
-                        context.setState(new GameOverState("Schachmatt! Schwarz gewinnt."));
+                        context.setState(new GameOverState("Checkmate! Black wins!"));
                     } else {
-                        context.setState(new GameOverState("Patt! Unentschieden!"));
+                        context.setState(new GameOverState("Stalemate! It's a draw!"));
                     }
                 } else {
                     context.setState(new WhiteTurnState());
                 }
 
-                // 4. ZUSTANDSWECHSEL! Schwarz ist fertig, Weiß ist dran.
                 context.setState(new WhiteTurnState());
                 return true;
             }
         }
 
-        System.out.println("Ungültiger Zug für diese Figur.");
+        System.out.println("Invalid move for this piece.");
         return false;
     }
 
     @Override
     public String getStateName() {
-        return "Schwarz ist am Zug";
+        return "Black's Turn";
     }
 }
