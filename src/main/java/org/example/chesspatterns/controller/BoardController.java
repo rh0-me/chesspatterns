@@ -22,27 +22,25 @@ public class BoardController {
     }
 
     public void handleSquareClick(int row, int col) {
-        // 1. Klick: Eine Figur auswählen
+        // 1st click: select piece
         if (selectedRow == -1 && selectedCol == -1) {
             Piece clickedPiece = gameManager.getBoard().getPiece(row, col);
 
             boolean isWhiteTurn = gameManager.getCurrentState() instanceof WhiteTurnState;
-            // Nur markieren, wenn da auch eine Figur steht
-            if (clickedPiece != null) {
+
+            if (clickedPiece != null && clickedPiece.isWhite() == isWhiteTurn) {
                 selectedRow = row;
                 selectedCol = col;
-                view.highlightSquare(row, col); // Nutzt unseren Decorator in der View!
+                view.highlightSquare(row, col);
 
                 List<int[]> validMoves = calculateValidMoves(clickedPiece, row, col);
                 view.highlightValidMoves(validMoves);
             }
         }
-        // 2. Klick: Zielfeld gewählt
+        // 2nd click: attempt move
         else {
-            // GameManager versucht den Zug auszuführen (State Pattern greift hier!)
             boolean success = gameManager.attemptMove(selectedRow, selectedCol, row, col);
 
-            // Auswahl zurücksetzen
             selectedRow = -1;
             selectedCol = -1;
             view.clearHighlights();
@@ -55,7 +53,6 @@ public class BoardController {
 
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
-                // Das Strategy Pattern in Aktion! Wir fragen die Figur einfach, ob der Zug erlaubt ist.
                 if (piece.canMove(board, startRow, startCol, r, c)) {
                     if (!board.wouldMoveCauseCheck(startRow, startCol, r, c, piece.isWhite()))
                         validMoves.add(new int[]{r, c});
@@ -63,5 +60,11 @@ public class BoardController {
             }
         }
         return validMoves;
+    }
+
+    public void resetSelection() {
+        selectedRow = -1;
+        selectedCol = -1;
+        view.clearHighlights();
     }
 }
