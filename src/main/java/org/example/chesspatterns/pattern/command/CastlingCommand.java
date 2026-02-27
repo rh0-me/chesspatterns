@@ -19,17 +19,16 @@ public class CastlingCommand implements Command {
         this.kingStartCol = kingStartCol;
         this.kingEndCol = kingEndCol;
 
-        // Turm-Positionen berechnen (Kurze oder lange Rochade?)
-        if (kingEndCol > kingStartCol) { // Kurze Rochade (Königsg-Flügel)
+        // King or queen side castling
+        if (kingEndCol > kingStartCol) {
             this.rookStartCol = 7;
-            this.rookEndCol = kingEndCol - 1; // Turm landet links neben dem König
-        } else { // Lange Rochade (Damen-Flügel)
+            this.rookEndCol = kingEndCol - 1;
+        } else { 
             this.rookStartCol = 0;
-            this.rookEndCol = kingEndCol + 1; // Turm landet rechts neben dem König
+            this.rookEndCol = kingEndCol + 1; 
         }
     }
 
-    // Für Undo merken, ob sie sich VOR diesem Zug schon mal bewegt hatten (sollte false sein)
     private boolean kingHadMoved;
     private boolean rookHadMoved;
 
@@ -41,12 +40,10 @@ public class CastlingCommand implements Command {
         kingHadMoved = king.hasMoved();
         rookHadMoved = rook.hasMoved();
 
-        // 1. König bewegen
         board.setPiece(row, kingEndCol, king);
         board.setPiece(row, kingStartCol, null);
         king.setHasMoved(true);
 
-        // 2. Turm bewegen
         board.setPiece(row, rookEndCol, rook);
         board.setPiece(row, rookStartCol, null);
         rook.setHasMoved(true);
@@ -56,7 +53,6 @@ public class CastlingCommand implements Command {
 
     @Override
     public void undo() {
-        // Alles exakt rückwärts
         board.setPiece(row, kingStartCol, king);
         board.setPiece(row, kingEndCol, null);
         king.setHasMoved(kingHadMoved);
