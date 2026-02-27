@@ -74,12 +74,12 @@ public class Main {
         buttonPanel.add(resetButton);
         buttonPanel.add(undoButton);
 
-        undoButton.addActionListener(e -> {
+        undoButton.addActionListener(_ -> {
             manager.undo();
             boardView.requestFocus();
         });
 
-        resetButton.addActionListener(e -> {
+        resetButton.addActionListener(_ -> {
             int confirm = JOptionPane.showConfirmDialog(
                     frame,
                     "Do you really want to restart the game?",
@@ -113,15 +113,12 @@ public class Main {
         turnPanel.add(turnTextLabel);
         turnPanel.add(turnLabel);
 
-        manager.addStateObserver(new GameStateObserver() {
-            @Override
-            public void onStateChanged(GameState state) {
-                turnTextLabel.setText(state.getStateName());
-                if (state instanceof BlackTurnState) {
-                    turnLabel.setBackground(Color.BLACK); // Oder Dunkelgrau
-                } else {
-                    turnLabel.setBackground(Color.WHITE);
-                }
+        manager.addStateObserver(state -> {
+            turnTextLabel.setText(state.getStateName());
+            if (state instanceof BlackTurnState) {
+                turnLabel.setBackground(Color.BLACK); // Oder Dunkelgrau
+            } else {
+                turnLabel.setBackground(Color.WHITE);
             }
         });
         return turnPanel;

@@ -1,6 +1,5 @@
 package org.example.chesspatterns.model.pieces;
 
-import org.example.chesspatterns.model.board.Board;
 import org.example.chesspatterns.pattern.strategy.MoveStrategy;
 
 

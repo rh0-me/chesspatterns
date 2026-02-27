@@ -39,7 +39,7 @@ public class BoardController {
         }
         // 2nd click: attempt move
         else {
-            boolean success = gameManager.attemptMove(selectedRow, selectedCol, row, col);
+            gameManager.attemptMove(selectedRow, selectedCol, row, col);
 
             selectedRow = -1;
             selectedCol = -1;
