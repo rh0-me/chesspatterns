@@ -3,25 +3,26 @@ package org.example.chesspatterns.pattern.state;
 import org.example.chesspatterns.core.GameManager;
 import org.example.chesspatterns.model.pieces.Piece;
 
+import javax.swing.*;
+
 public class GameOverState implements GameState {
-    private final String message;
+    private final String resultMessage;
 
-    public GameOverState(String message) {
-        this.message = message;
-    }
+    public GameOverState(String resultMessage) {
+        this.resultMessage = resultMessage;
 
-
-    @Override
-    public boolean canSelectPiece(Piece piece) {
-        return false;
+        // Zeigt ein Pop-Up Fenster an, wenn das Spiel vorbei ist
+        JOptionPane.showMessageDialog(null, resultMessage, "Spielende", JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
-    public void nextTurn(GameManager gameManager) {
+    public boolean handleMove(GameManager context, int startRow, int startCol, int endRow, int endCol) {
+        System.out.println("Das Spiel ist bereits vorbei: " + resultMessage);
+        return false; // Blockiert jeden Klick
     }
 
     @Override
-    public String getStatusText() {
-        return message;
+    public String getStateName() {
+        return "Spiel vorbei";
     }
 }

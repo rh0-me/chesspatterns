@@ -1,212 +1,155 @@
 package org.example.chesspatterns.model.board;
 
-import org.example.chesspatterns.core.GameManager;
-import org.example.chesspatterns.model.CheckScanner;
 import org.example.chesspatterns.model.pieces.*;
-import org.example.chesspatterns.pattern.command.Command;
-import org.example.chesspatterns.pattern.command.Move;
-import org.example.chesspatterns.pattern.memento.BoardMemento;
-import org.example.chesspatterns.pattern.observer.GameObserver;
+import org.example.chesspatterns.pattern.factory.PieceFactory;
+import org.example.chesspatterns.pattern.factory.PieceType;
+import org.example.chesspatterns.pattern.factory.StandardPieceFactory;
+import org.example.chesspatterns.pattern.observer.BoardObserver;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 public class Board {
-    // horizontal 
-    public final int boardWidthInTiles = 8;
-    // vertical
-    public final int boardHeightInTiles = 8;
-    public Point enPassantTile = null;
+    private final List<BoardObserver> observers = new ArrayList<>();
+    private final Piece[][] grid = new Piece[8][8];
+    private final PieceFactory pieceFactory;
 
-    ArrayList<Piece> pieces = new ArrayList<>();
-    public CheckScanner checkScanner = new CheckScanner(this);
-
-    private Piece selectedPiece;
-    private final Stack<Command> history = new Stack<>();
-    private final List<GameObserver> observers = new ArrayList<>();
-    private final PieceFactory pieceFactory = new PieceFactory();
 
     public Board() {
+        this.pieceFactory = new StandardPieceFactory();
+        setupBoard();
     }
 
-    public boolean isValidMove(Move move) {
-        if (isSameTeam(move.piece, move.getCapturedPiece())) return false;
-        if (!move.piece.isValidMove(move.newCol, move.newRow)) return false;
-        if (move.piece.moveCollidesWithPieces(move.newCol, move.newRow)) return false;
+    private void setupBoard() {
+        for (int col = 0; col < 8; col++) {
+            grid[6][col] = pieceFactory.createPiece(PieceType.PAWN, true); // Nutzung der Factory!
+            grid[1][col] = pieceFactory.createPiece(PieceType.PAWN, false); // Schwarze Bauern
 
-        move.execute();
-        boolean kingInCheckAfterMove = checkScanner.isKingInCheck(move.piece.isWhite);
-        move.undo();
 
-        if (kingInCheckAfterMove)
-            return false;
+        }
 
-        return true;
+        grid[7][0] = pieceFactory.createPiece(PieceType.ROOK, true);
+        grid[7][1] = pieceFactory.createPiece(PieceType.KNIGHT, true);
+        grid[7][2] = pieceFactory.createPiece(PieceType.BISHOP, true);
+        grid[7][3] = pieceFactory.createPiece(PieceType.QUEEN, true);
+        grid[7][4] = pieceFactory.createPiece(PieceType.KING, true);
+        grid[7][5] = pieceFactory.createPiece(PieceType.BISHOP, true);
+        grid[7][6] = pieceFactory.createPiece(PieceType.KNIGHT, true);
+        grid[7][7] = pieceFactory.createPiece(PieceType.ROOK, true);
+
+        grid[0][0] = pieceFactory.createPiece(PieceType.ROOK, false);
+        grid[0][1] = pieceFactory.createPiece(PieceType.KNIGHT, false);
+        grid[0][2] = pieceFactory.createPiece(PieceType.BISHOP, false);
+        grid[0][3] = pieceFactory.createPiece(PieceType.QUEEN, false);
+        grid[0][4] = pieceFactory.createPiece(PieceType.KING, false);
+        grid[0][6] = pieceFactory.createPiece(PieceType.KNIGHT, false);
+        grid[0][5] = pieceFactory.createPiece(PieceType.BISHOP, false);
+        grid[0][7] = pieceFactory.createPiece(PieceType.ROOK, false);
+
     }
 
-    public void makeMove(Move move) {
-        move.execute();
-        history.push(move);
+    public Piece getPiece(int row, int col) {
+        return grid[row][col];
+    }
+
+    public void setPiece(int row, int col, Piece piece) {
+        grid[row][col] = piece;
+    }
+
+    public void addObserver(BoardObserver observer) {
+        observers.add(observer);
+    }
+
+    public void notifyObservers() {
+        for (BoardObserver observer : observers) {
+            observer.onBoardChanged();
+        }
+    }
+
+    public void executeMove(/* Start, Ziel */) {
         notifyObservers();
-        GameManager.getInstance().nextTurn();
-
     }
 
-    public void undoMove() {
-        if (!history.empty()) {
-            Command lastCommand = history.pop();
-            lastCommand.undo();
-            GameManager.getInstance().nextTurn();
-        }
-    }
+    public boolean isKingInCheck(boolean isWhiteKing) {
+        int kingRow = -1;
+        int kingCol = -1;
 
-    public void resetBoard() {
-        pieces.clear();
-        history.clear();
-        enPassantTile = null;
-        selectedPiece = null;
-
-        setStartingPosition();
-    }
-
-    public void setStartingPosition() {
-
-        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 0, 0, false));
-        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 1, 0, false));
-        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 2, 0, false));
-        addPiece(pieceFactory.createPiece(PieceType.QUEEN, this, 3, 0, false));
-        addPiece(pieceFactory.createPiece(PieceType.KING, this, 4, 0, false));
-        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 5, 0, false));
-        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 6, 0, false));
-        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 7, 0, false));
-
-        for (int i = 0; i < 8; i++) {
-            addPiece(pieceFactory.createPiece(PieceType.PAWN, this, i, 1, false));
-        }
-
-        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 0, 7, true));
-        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 1, 7, true));
-        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 2, 7, true));
-        addPiece(pieceFactory.createPiece(PieceType.QUEEN, this, 3, 7, true));
-        addPiece(pieceFactory.createPiece(PieceType.KING, this, 4, 7, true));
-        addPiece(pieceFactory.createPiece(PieceType.BISHOP, this, 5, 7, true));
-        addPiece(pieceFactory.createPiece(PieceType.KNIGHT, this, 6, 7, true));
-        addPiece(pieceFactory.createPiece(PieceType.ROOK, this, 7, 7, true));
-
-        for (int i = 0; i < 8; i++) {
-            addPiece(pieceFactory.createPiece(PieceType.PAWN, this, i, 6, true));
-        }
-    }
-
-    public boolean isSameTeam(Piece piece1, Piece piece2) {
-        if (piece1 == null || piece2 == null) {
-            return false;
-        }
-        return piece1.isWhite == piece2.isWhite;
-    }
-
-    public Piece findKing(boolean isWhite) {
-        for (Piece piece : pieces) {
-            if (piece instanceof King && piece.isWhite == isWhite) {
-                return piece;
-            }
-        }
-        return null;
-    }
-
-    public void capturePiece(Piece piece) {
-        pieces.remove(piece);
-    }
-
-    public Piece getPieceAtLocation(int col, int row) {
-        for (Piece piece : pieces) {
-            if (piece.column == col && piece.row == row) {
-                return piece;
-            }
-        }
-        return null;
-    }
-
-    public ArrayList<Point> getValidMovesForPiece(Piece piece) {
-        ArrayList<Point> validMoves = new ArrayList<>();
-
-        for (int row = 0; row < boardHeightInTiles; row++) {
-            for (int col = 0; col < boardWidthInTiles; col++) {
-                Move move = new Move(this, piece, col, row);
-                if (isValidMove(move)) {
-                    validMoves.add(new Point(col, row));
+        // 1. Finde die Koordinaten des Königs
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece p = getPiece(r, c);
+                if (p != null && p.isWhite() == isWhiteKing && p.getClass().getSimpleName().equals("King")) {
+                    kingRow = r;
+                    kingCol = c;
+                    break;
                 }
             }
         }
 
-        return validMoves;
-    }
+        // Sicherheitsprüfung (falls der König z.B. in einem Test-Setup fehlt)
+        if (kingRow == -1) return false;
 
-    public void setSelectedPiece(Piece piece) {
-        selectedPiece = piece;
-    }
-
-    public Piece getSelectedPiece() {
-        return selectedPiece;
-    }
-
-    public List<Piece> getPieces() {
-        return pieces;
-    }
-
-    public void addPiece(Piece piece) {
-        pieces.add(piece);
-    }
-
-    public void removePiece(Piece piece) {
-        pieces.remove(piece);
-    }
-
-    public Piece promotePiece(PieceType type, boolean isWhite, int newCol, int newRow) {
-
-        return pieceFactory.createPiece(type, this, newCol, newRow, isWhite);
-    }
-
-
-    public void addObserver(GameObserver observer) {
-        observers.add(observer);
-    }
-
-    public void removeObserver(GameObserver observer) {
-        observers.remove(observer);
-    }
-
-    public void notifyObservers() {
-        for (GameObserver observer : observers) {
-            observer.update();
-        }
-    }
-
-    public Board copyWithPieces(ArrayList<Piece> newPieces) {
-        Board newBoard = new Board();
-        newBoard.pieces = newPieces;
-        return newBoard;
-    }
-
-    public BoardMemento createMemento() {
-        List<Piece> copiedPieces = new ArrayList<>();
-        for (Piece piece : pieces) {
-            copiedPieces.add(piece.copyWithBoard(this));
-        }
-        return new BoardMemento(copiedPieces);
-    }
-
-    public void restoreFromMemento(BoardMemento memento) {
-
-        this.pieces.clear();
-
-        for (Piece piece : memento.getPiecesSnapshot()) {
-            this.addPiece(piece.copyWithBoard(this));
+        // 2. Prüfe alle Figuren auf dem Feld. Wenn es ein Gegner ist, frage seine Strategy!
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece enemy = getPiece(r, c);
+                if (enemy != null && enemy.isWhite() != isWhiteKing) {
+                    // Das Strategy Pattern leistet hier die ganze Arbeit!
+                    if (enemy.canMove(this, r, c, kingRow, kingCol)) {
+                        return true; // Ein Gegner kann den König schlagen -> SCHACH!
+                    }
+                }
+            }
         }
 
-        notifyObservers();
+        return false; // Kein Gegner kann den König erreichen
     }
 
+    public boolean wouldMoveCauseCheck(int startRow, int startCol, int endRow, int endCol, boolean isWhite) {
+        Piece movingPiece = getPiece(startRow, startCol);
+        Piece targetPiece = getPiece(endRow, endCol);
+
+        // 1. Simulation (heimlich verschieben)
+        // Wir rufen absichtlich NICHT notifyObservers() auf, damit die GUI nicht flackert!
+        grid[endRow][endCol] = movingPiece;
+        grid[startRow][startCol] = null;
+
+        // 2. Prüfung: Steht der König JETZT im Schach?
+        boolean inCheck = isKingInCheck(isWhite);
+
+        // 3. Rollback (alles wieder exakt so hinstellen wie vorher)
+        grid[startRow][startCol] = movingPiece;
+        grid[endRow][endCol] = targetPiece;
+
+        return inCheck; // Gibt true zurück, wenn dieser Zug Selbstmord wäre
+    }
+
+    // Datei: Board.java (Ergänzung)
+
+    public boolean hasAnyValidMoves(boolean isWhiteTurn) {
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece piece = getPiece(r, c);
+
+                // Nur die Figuren des aktuellen Spielers prüfen
+                if (piece != null && piece.isWhite() == isWhiteTurn) {
+
+                    // Alle 64 Felder als potenzielles Ziel testen
+                    for (int endRow = 0; endRow < 8; endRow++) {
+                        for (int endCol = 0; endCol < 8; endCol++) {
+
+                            // Wenn die Strategy den Zug erlaubt UND der Zug kein Schach verursacht...
+                            if (piece.canMove(this, r, c, endRow, endCol)) {
+                                if (!wouldMoveCauseCheck(r, c, endRow, endCol, isWhiteTurn)) {
+                                    return true; // Wir haben mindestens einen rettenden Zug gefunden!
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        return false; // Kein einziger rettender Zug mehr möglich!
+    }
 }

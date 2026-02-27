@@ -1,7 +1,7 @@
 package org.example.chesspatterns.view;
 
 import org.example.chesspatterns.core.PromotionHandler;
-import org.example.chesspatterns.model.pieces.PieceType;
+import org.example.chesspatterns.pattern.factory.PieceType;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

@@ -1,6 +1,6 @@
 package org.example.chesspatterns.core;
 
-import org.example.chesspatterns.model.pieces.PieceType;
+import org.example.chesspatterns.pattern.factory.PieceType;
 
 public interface PromotionHandler {
     PieceType handlePromotion(boolean isWhite);
