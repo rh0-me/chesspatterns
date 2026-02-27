@@ -11,18 +11,17 @@ public class GameOverState implements GameState {
     public GameOverState(String resultMessage) {
         this.resultMessage = resultMessage;
 
-        // Zeigt ein Pop-Up Fenster an, wenn das Spiel vorbei ist
-        JOptionPane.showMessageDialog(null, resultMessage, "Spielende", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, resultMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
     public boolean handleMove(GameManager context, int startRow, int startCol, int endRow, int endCol) {
-        System.out.println("Das Spiel ist bereits vorbei: " + resultMessage);
-        return false; // Blockiert jeden Klick
+        System.out.println("The game is over: " + resultMessage);
+        return false;
     }
 
     @Override
     public String getStateName() {
-        return "Spiel vorbei";
+        return "Game Over";
     }
 }
