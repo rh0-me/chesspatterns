@@ -13,20 +13,20 @@ public class PawnMoveStrategy implements MoveStrategy {
         int colDiff = Math.abs(startCol - endCol);
         Piece targetPiece = board.getPiece(endRow, endCol);
 
-        // 1. Normaler Zug nach vorne (1 Feld)
+        // Normal move (1)
         if (colDiff == 0 && rowDiff == direction) {
-            return targetPiece == null; // Feld muss leer sein
+            return targetPiece == null; 
         }
 
-        // 2. Erster Zug (2 Felder nach vorne)
+        // First move (2)
         if (colDiff == 0 && rowDiff == 2 * direction && startRow == startRowForTwoSteps) {
             Piece intermediatePiece = board.getPiece(startRow + direction, startCol);
-            return intermediatePiece == null && targetPiece == null; // Beide Felder müssen leer sein
+            return intermediatePiece == null && targetPiece == null; 
         }
 
-        // 3. Schlagen (diagonal 1 Feld)
+        // Capture
         if (colDiff == 1 && rowDiff == direction) {
-            return targetPiece != null && targetPiece.isWhite() != isWhite; // Muss ein Gegner sein
+            return targetPiece != null && targetPiece.isWhite() != isWhite; 
         }
 
         return false;
