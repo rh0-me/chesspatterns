@@ -9,41 +9,37 @@ public class KingMoveStrategy implements MoveStrategy {
         int rowDiff = Math.abs(startRow - endRow);
         int colDiff = Math.abs(startCol - endCol);
 
-        // --- Standard-Königszug (1 Feld) ---
+        // Default move 1
         if (rowDiff <= 1 && colDiff <= 1) {
             Piece targetPiece = board.getPiece(endRow, endCol);
             return targetPiece == null || targetPiece.isWhite() != isWhite;
         }
 
-        // --- ROCHADE (2 Felder horizontal) ---
+        // Castling
         Piece king = board.getPiece(startRow, startCol);
         if (rowDiff == 0 && colDiff == 2 && !king.hasMoved()) {
 
-            // Geht die Rochade nach rechts (kurz) oder links (lang)?
+            // King or Queen side castling?
             int direction = (endCol > startCol) ? 1 : -1;
-            int rookCol = (direction == 1) ? 7 : 0; // Wo steht der Turm normalerweise?
+            int rookCol = (direction == 1) ? 7 : 0;
 
             Piece rook = board.getPiece(startRow, rookCol);
 
-            // 1. Prüfen, ob da wirklich ein Turm steht und ob er sich schon bewegt hat
+            // Has rook moved?
             if (rook == null || rook.hasMoved() || rook.isWhite() != isWhite) {
                 return false;
             }
 
-            // 2. Prüfen, ob die Felder ZWISCHEN König und Turm leer sind
+            // Check intermediate
             int currentCol = startCol + direction;
             while (currentCol != rookCol) {
                 if (board.getPiece(startRow, currentCol) != null) {
-                    return false; // Figur steht im Weg!
+                    return false;
                 }
                 currentCol += direction;
             }
-
-            // Hinweis: Die Regel "König darf nicht im Schach stehen oder durchs Schach ziehen"
-            // bauen wir später in den GameManager ein, da die Strategy nur reine Bewegungsmuster kennt!
             return true;
         }
-
         return false;
     }
 }
